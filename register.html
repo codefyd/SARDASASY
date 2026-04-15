@@ -474,25 +474,67 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 
   <!-- ==================== SUCCESS ==================== -->
-  <div class="success-screen" id="successScreen">
-    <div class="success-icon"><i class="fas fa-check"></i></div>
-    <h2>تم إرسال طلبك بنجاح!</h2>
-    <p>ستصلك رسالة على بريدك الإلكتروني عند قبول طلبك. رقم طلبك للمتابعة:</p>
-    <div class="req-id-box">
-      <div class="lbl">رقم الطلب</div>
-      <div class="rid" id="reqId">—</div>
+  <!-- شاشة نجاح: انتظار مراجعة -->
+  <div class="success-screen" id="successWaiting">
+    <div class="success-icon" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-color:#fcd34d;">
+      <i class="fas fa-hourglass-half" style="color:#d97706;"></i>
     </div>
-    <p style="font-size:.82rem;color:var(--text-muted);margin-top:8px;">احتفظ بهذا الرقم للاستفسار</p>
+    <h2>تم استلام طلبك!</h2>
+    <p>سيتم مراجعة طلبك خلال 24 ساعة. بعد القبول ستصلك رسالة واتساب برابط نظامك مباشرة.</p>
+    <div class="req-id-box">
+      <div class="lbl">رقم الطلب — احتفظ به للمتابعة</div>
+      <div class="rid" id="reqIdWaiting">—</div>
+    </div>
+    <div style="margin-top:20px;padding:14px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;font-size:.83rem;color:#065f46;line-height:1.8;text-align:right;">
+      <i class="fas fa-circle-check fa-sm"></i>
+      ستصل رسالة واتساب على رقم <strong id="waitPhone">—</strong> عند القبول
+    </div>
+  </div>
+
+  <!-- شاشة نجاح: قبول فوري + رابط -->
+  <div class="success-screen" id="successDirect">
+    <div class="success-icon"><i class="fas fa-check"></i></div>
+    <h2>تم تفعيل نظامك فوراً!</h2>
+    <p>هذا هو رابط برنامج السرد الخاص بمجمعك. وزّعه على المسمعين.</p>
+
+    <div style="margin:20px auto;max-width:440px;">
+      <!-- الرابط -->
+      <div style="background:var(--primary-lt);border:2px solid rgba(1,73,121,.2);border-radius:12px;padding:16px 18px;">
+        <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:6px;">رابط برنامج السرد لمجمعك</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div id="directLink" style="font-size:.85rem;font-weight:700;color:var(--primary);direction:ltr;text-align:left;flex:1;word-break:break-all;">—</div>
+          <button onclick="copyDirectLink()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-family:'Tajawal',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;">
+            <i class="fas fa-copy fa-xs"></i> نسخ
+          </button>
+        </div>
+      </div>
+
+      <!-- واتساب -->
+      <button id="btnWaShare" onclick="shareViaWhatsApp()" style="
+        width:100%;margin-top:12px;padding:13px;border:none;border-radius:10px;
+        background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;
+        font-family:'Tajawal',sans-serif;font-size:.95rem;font-weight:800;
+        cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <i class="fab fa-whatsapp fa-lg"></i> إرسال الرابط عبر واتساب
+      </button>
+      <div style="font-size:.75rem;color:var(--text-muted);margin-top:6px;text-align:center;">
+        يفتح واتساب ويب برسالة جاهزة برقم مسؤول المجمع
+      </div>
+    </div>
   </div>
 
 </div><!-- /form-wrap -->
 
+<script src="supabase-client.js"></script>
 <script>
 /* ============ STATE ============ */
 var currentStep = 1;
 var selectedMethod = '';
 var csvHeaders = [];
+var csvColMap = {};
+var csvFileRef = null;
 var formData = {};
+var db = new SardDB();
 
 /* ============ STEPS ============ */
 function goStep(n){
@@ -562,6 +604,7 @@ function selectMethod(m){
 function handleFile(input){
   var f=input.files[0];
   if(!f) return;
+  csvFileRef = f;
   document.getElementById('fileName').textContent=f.name;
   document.getElementById('fileSize').textContent=(f.size/1024).toFixed(0)+' KB';
   document.getElementById('filePreview').classList.add('show');
@@ -637,40 +680,108 @@ function buildSummary(){
 }
 
 /* ============ SUBMIT ============ */
-function submitRequest(){
+async function submitRequest(){
   var btn=document.getElementById('btnSubmit');
   btn.disabled=true;
   btn.innerHTML='<i class="fas fa-spinner fa-spin"></i><span>جاري الإرسال...</span>';
 
-  var payload={
-    name:    document.getElementById('f_name').value.trim(),
-    city:    document.getElementById('f_city').value.trim(),
-    manager: document.getElementById('f_manager').value.trim(),
-    phone:   document.getElementById('f_phone').value.trim(),
-    email:   document.getElementById('f_email').value.trim(),
-    session: document.getElementById('f_session').value.trim(),
-    studentsCount: document.getElementById('f_students_count').value,
-    importMethod: selectedMethod,
-    sheetsUrl: selectedMethod==='sheets'?(document.getElementById('f_sheets_url').value.trim()||''):'',
-    status: 'pending',
-    submittedAt: new Date().toISOString()
-  };
+  try {
+    if(selectedMethod==='csv'){
+      csvColMap={};
+      ['name','track','halaqa','guardian_phone','student_phone','parts_count'].forEach(function(f){
+        var el=document.getElementById('cm_'+f);
+        if(el && el.value!=='') csvColMap[f]=parseInt(el.value,10);
+      });
+    }
 
-  /* ===== SUPABASE INSERT =====
-     استبدل هذا بـ:
-     const { data, error } = await supabase.from('organizations').insert(payload).select().single();
-     ثم حفظ import_jobs إذا كان selectedMethod csv أو sheets
-  ============================= */
+    btn.innerHTML='<i class="fas fa-spinner fa-spin"></i><span>جاري حفظ البيانات...</span>';
 
-  // محاكاة مؤقتة
-  setTimeout(function(){
-    var rid='SRD-'+Math.random().toString(36).slice(2,8).toUpperCase();
+    var result = await db.registerOrganization({
+      name:          document.getElementById('f_name').value.trim(),
+      city:          document.getElementById('f_city').value.trim(),
+      manager_name:  document.getElementById('f_manager').value.trim(),
+      phone:         document.getElementById('f_phone').value.trim(),
+      email:         document.getElementById('f_email').value.trim(),
+      sessionName:   document.getElementById('f_session').value.trim(),
+      studentsCount: document.getElementById('f_students_count').value,
+      importMethod:  selectedMethod,
+      sheetsUrl:     selectedMethod==='sheets'?(document.getElementById('f_sheets_url').value.trim()||''):null,
+      csvColMap:     selectedMethod==='csv'?csvColMap:null,
+    });
+
+    if(selectedMethod==='csv' && csvFileRef){
+      btn.innerHTML='<i class="fas fa-spinner fa-spin"></i><span>جاري رفع الملف...</span>';
+      try {
+        var csvUrl = await db.uploadCSV(result.org.id, csvFileRef);
+        if(result.importJob) await db._patch('import_jobs', result.importJob.id, { file_url: csvUrl });
+      } catch(e){ console.warn('CSV upload failed:', e.message); }
+    }
+
+    // ─── تحديد وضع العرض بناءً على إعداد المنصة ───
     document.getElementById('step4').classList.remove('active');
-    document.getElementById('successScreen').classList.add('show');
-    document.getElementById('reqId').textContent=rid;
-    // إخفاء شريط الخطوات
     document.getElementById('stepsBar').style.display='none';
-  }, 1800);
+
+    if(result.autoApproved && result.inviteToken){
+      // وضع القبول الفوري: عرض الرابط مباشرة
+      var link = (window.SARD_BASE_URL||'https://sard.app')+'/join/'+result.inviteToken;
+      document.getElementById('directLink').textContent = link;
+      document.getElementById('directLink').dataset.link = link;
+      // تخزين بيانات الواتساب
+      var phone  = document.getElementById('f_phone').value.trim().replace(/\D/g,'');
+      if(phone.startsWith('0')) phone = '966'+phone.slice(1);
+      var orgName = document.getElementById('f_name').value.trim();
+      window._waPhone   = phone;
+      window._waLink    = link;
+      window._waOrgName = orgName;
+      document.getElementById('successDirect').classList.add('show');
+    } else {
+      // وضع الانتظار: طلب بانتظار المراجعة
+      document.getElementById('reqIdWaiting').textContent = result.org.id.slice(0,8).toUpperCase();
+      document.getElementById('waitPhone').textContent    = document.getElementById('f_phone').value.trim();
+      document.getElementById('successWaiting').classList.add('show');
+    }
+
+  } catch(err) {
+    var errMsg = err.message||'حدث خطأ غير متوقع';
+    if(errMsg.includes('duplicate')||errMsg.includes('unique')) errMsg='يوجد مجمع مسجّل بهذا البريد الإلكتروني مسبقاً.';
+    showError(errMsg);
+    btn.disabled=false;
+    btn.innerHTML='<i class="fas fa-paper-plane"></i><span>إعادة المحاولة</span>';
+  }
+}
+
+function copyDirectLink(){
+  var link = document.getElementById('directLink').dataset.link || document.getElementById('directLink').textContent;
+  navigator.clipboard.writeText(link).then(function(){
+    showCopied();
+  }).catch(function(){ prompt('انسخ الرابط:',link); });
+}
+
+function showCopied(){
+  var btn = event.currentTarget;
+  var orig = btn.innerHTML;
+  btn.innerHTML='<i class="fas fa-check fa-xs"></i> تم النسخ';
+  btn.style.background='var(--success)';
+  setTimeout(function(){ btn.innerHTML=orig; btn.style.background=''; }, 2000);
+}
+
+function shareViaWhatsApp(){
+  var phone    = window._waPhone    || '';
+  var link     = window._waLink     || '';
+  var orgName  = window._waOrgName  || 'مجمعك';
+  var msg = 'السلام عليكم،\n\nتم تفعيل منصة السرد لـ *'+orgName+'* 🎉\n\nرابط برنامج السرد الخاص بمجمعكم:\n'+link+'\n\nوزّع الرابط على المسمعين، مع التوفيق.';
+  var url = 'https://wa.me/'+phone+'?text='+encodeURIComponent(msg);
+  window.open(url, '_blank');
+}
+
+function showError(msg){
+  var existing=document.getElementById('submitError');
+  if(existing) existing.remove();
+  var div=document.createElement('div');
+  div.id='submitError';
+  div.style.cssText='background:#fee2e2;border:1px solid #fca5a5;border-radius:9px;padding:12px 16px;font-size:.85rem;color:#991b1b;display:flex;align-items:center;gap:8px;margin-top:12px;';
+  div.innerHTML='<i class="fas fa-circle-exclamation"></i><span>'+escH(msg)+'</span>';
+  document.getElementById('btnSubmit').parentElement.appendChild(div);
 }
 
 /* ============ HELPERS ============ */
