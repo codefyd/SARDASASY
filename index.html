@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -6,10 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>برنامج السرد</title>
 
+  <!-- تسريع تحميل الموارد الخارجية -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin/>
+  <link rel="dns-prefetch" href="https://script.google.com"/>
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap"/>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js" defer></script>
+  <script src="assets/js/config.js"></script>
 
   <style>
     :root {
@@ -1078,8 +1084,8 @@
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbwhK6Xt_lWe4jGidKO4n-yT774a047rvxRhzX6fklakJM0_5QXEEmtWz-GpjPGw2ZAS/exec";
-try { localStorage.setItem('sard_api_url', API); } catch(_e) {}
+const API = window.APP_CONFIG.API_URL;
+  try { localStorage.setItem('sard_api_url', API); } catch(_e) {}
 
 
 
@@ -1116,6 +1122,8 @@ async function _apiGet(action, params = {}) {
 }
 
 async function _apiPost(action, payload = {}) {
+  // نستخدم URLSearchParams عمداً — application/json يُطلق preflight
+  // وGoogle Apps Script لا يدعم preflight (CORS OPTIONS)
   const body = new URLSearchParams();
   body.set('action', action);
   body.set('payload', JSON.stringify(payload || {}));
@@ -1207,6 +1215,29 @@ const STATE = {
 };
 
 // =============================================
+// CACHE HELPERS
+// =============================================
+const CACHE_KEY_INIT     = 'sard_cache_init';
+const CACHE_KEY_STUDENTS = 'sard_cache_students';
+const CACHE_TTL_MS       = 5 * 60 * 1000; // 5 دقائق
+
+function _cacheSet(key, data) {
+  try { sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch(_) {}
+}
+function _cacheGet(key) {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (Date.now() - obj.ts > CACHE_TTL_MS) { sessionStorage.removeItem(key); return null; }
+    return obj.data;
+  } catch(_) { return null; }
+}
+function _cacheClear() {
+  try { sessionStorage.removeItem(CACHE_KEY_INIT); sessionStorage.removeItem(CACHE_KEY_STUDENTS); } catch(_) {}
+}
+
+// =============================================
 // INIT
 // =============================================
 window.addEventListener('load', () => {
@@ -1236,16 +1267,52 @@ function syncResponsiveNav() {
 
 window.addEventListener('resize', syncResponsiveNav);
 
-function loadData() {
+function loadData(forceRefresh = false) {
   showSpinner();
   STATE.recordsLoaded = false;
   STATE.recordsLoading = true;
+
+  if (!forceRefresh) {
+    const cachedInit     = _cacheGet(CACHE_KEY_INIT);
+    const cachedStudents = _cacheGet(CACHE_KEY_STUDENTS);
+    if (cachedInit && cachedStudents) {
+      STATE.settings     = cachedInit.settings || {};
+      STATE.trackConfigs = cachedInit.trackConfigs || [];
+      STATE.complex      = cachedInit.complex || {};
+      STATE.students     = cachedStudents.students || [];
+      STATE.halaqas      = cachedStudents.halaqas || [];
+      const cn = STATE.complex.complexName || '';
+      if (cn) document.getElementById('navComplexName').textContent = '— ' + cn;
+      renderHalaqas();
+      loadAttendanceHalaqas();
+      loadSettingsForm();
+      applyReportsButton();
+      hideSpinner();
+      // تحميل السجلات في الخلفية
+      _apiGet('getRecords')
+        .then(recordsData => {
+          STATE.records = recordsData.records || [];
+          STATE.recordsLoaded = true;
+          STATE.recordsLoading = false;
+        })
+        .catch(() => { STATE.recordsLoading = false; });
+      // تحديث الكاش في الخلفية بهدوء
+      Promise.all([_apiGet('initData'), _apiGet('getStudents')]).then(([init, stu]) => {
+        _cacheSet(CACHE_KEY_INIT, init);
+        _cacheSet(CACHE_KEY_STUDENTS, stu);
+      }).catch(() => {});
+      return;
+    }
+  }
 
   Promise.all([
     _apiGet('initData'),
     _apiGet('getStudents')
   ])
     .then(([initData, studentsData]) => {
+      _cacheSet(CACHE_KEY_INIT, initData);
+      _cacheSet(CACHE_KEY_STUDENTS, studentsData);
+
       STATE.settings     = initData.settings || {};
       STATE.trackConfigs = initData.trackConfigs || [];
       STATE.complex      = initData.complex || {};
@@ -1417,14 +1484,11 @@ function renderHalaqas() {
   }
 
   const grid = document.getElementById('halaqaGrid');
-  grid.innerHTML = '';
-  items.forEach(h => {
-    const btn = document.createElement('button');
-    btn.className = 'sel-btn';
-    btn.innerHTML = `<div class="fw-bold">${escapeHtml(h.name)}</div>`;
-    btn.onclick = () => selectHalaqa(h.id, h.name, btn);
-    grid.appendChild(btn);
-  });
+  grid.innerHTML = items.map(h =>
+    `<button class="sel-btn" onclick="selectHalaqa('${jsString(String(h.id))}','${jsString(String(h.name))}',this)">
+      <div class="fw-bold">${escapeHtml(h.name)}</div>
+    </button>`
+  ).join('');
 
   STATE.selHalaqa = null;
   STATE.selStudent = null;
@@ -1454,7 +1518,6 @@ function renderStudents() {
   });
 
   const grid = document.getElementById('studentGrid');
-  grid.innerHTML = '';
 
   if (!filtered.length) {
     grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:20px;">لا يوجد طلاب</p>';
@@ -1462,15 +1525,12 @@ function renderStudents() {
     return;
   }
 
-  filtered.forEach(s => {
+  grid.innerHTML = filtered.map(s => {
     const info = [];
     if (STATE.settings.showTrackInSelection && s.track) info.push('مسار ' + s.track);
     if (!useTracksOnly && s.halaqa) info.push(s.halaqa);
     if (s.partsCount) info.push(s.partsCount + ' جزء');
-
-    const btn = document.createElement('button');
-    btn.className = 'sel-btn';
-    btn.innerHTML = `
+    return `<button class="sel-btn" onclick="selectStudent('${jsString(String(s.id))}',this)">
       <div class="d-flex align-center gap-2">
         <div style="width:36px;height:36px;border-radius:50%;background:var(--primary-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <i class="fas fa-user" style="color:var(--primary);font-size:.9rem;"></i>
@@ -1480,10 +1540,8 @@ function renderStudents() {
           <div class="text-muted" style="font-size:.75rem;">${escapeHtml(info.join(' · '))}</div>
         </div>
       </div>
-    `;
-    btn.onclick = () => selectStudent(s.id, btn);
-    grid.appendChild(btn);
-  });
+    </button>`;
+  }).join('');
 
   document.getElementById('studentSection').style.display = 'block';
 }
@@ -1508,7 +1566,7 @@ function _startEvaluationCore() {
     showToast('السجلات ما زالت تُحمّل في الخلفية، جرّب بعد لحظات.', 'info');
     return;
   }
-  const student = STATE.students.find(s => s.id === STATE.selStudent);
+  const student = STATE.students.find(s => String(s.id) === String(STATE.selStudent));
   if (!student) return;
 
   const eff = getEffectiveSettings(student);
@@ -1630,7 +1688,6 @@ function renderStudentHistory(student, rec, eff) {
 function getEffectiveSettings(student) {
   const tc = STATE.trackConfigs.find(t => t.name === student.track);
   const s = STATE.settings;
-  console.log('showDeleteSectionButton:', s.showDeleteSectionButton);
   return {
     partsDivisions: tc && tc.partsDivisions ? Number(tc.partsDivisions) : Number(s.partsDivisions ?? 2),
     mistakeDeduction: tc && tc.mistakeDeduction != null ? Number(tc.mistakeDeduction) : Number(s.mistakeDeduction ?? 0.5),
@@ -1691,23 +1748,22 @@ function autoSuggestHizb(idx) {
 
 function renderSections() {
   const container = document.getElementById('sectionsContainer');
-  container.innerHTML = '';
   const eff = STATE.evalRecord.eff;
   const div = eff.partsDivisions;
   const divOptions = div > 1 ? Array.from({ length:div }, (_, i) => i + 1) : [1];
+  const editAllowed = !eff.editSectionsCode || !!localStorage.getItem('sard_edit_unlocked');
+  const maxScore = 20 / div;
+  const divLbl = escapeHtml(divLabel(div));
 
-  STATE.evalSections.forEach((sec, idx) => {
+  // بناء كل الـ HTML دفعة واحدة — أسرع بكثير من appendChild متعدد
+  const htmlParts = STATE.evalSections.map((sec, idx) => {
     const isSaved = sec.wasSavedRead && !sec._editing;
     const isPassed = !!sec.isPassed;
     const hasData = !!(sec.partNumber && sec.hizb);
-
-    const card = document.createElement('div');
-    card.id = 'sec-card-' + idx;
-    card.className = 'section-card' + (isSaved ? (isPassed ? ' passed' : ' failed') : (sec._editing ? ' editing' : ''));
+    const cardClass = 'section-card' + (isSaved ? (isPassed ? ' passed' : ' failed') : (sec._editing ? ' editing' : ''));
 
     if (isSaved && !sec._editing) {
-      const editAllowed = !eff.editSectionsCode || !!localStorage.getItem('sard_edit_unlocked');
-      card.innerHTML = `
+      return `<div id="sec-card-${idx}" class="${cardClass}">
         <div class="d-flex justify-between align-center" style="margin-bottom:8px;">
           <div class="d-flex align-center gap-2">
             <span class="badge-sard badge-prim" style="font-size:.75rem;">مقطع ${idx + 1}</span>
@@ -1719,116 +1775,96 @@ function renderSections() {
             <div class="score-circle ${isPassed ? 'score-pass' : 'score-fail'}" style="width:48px;height:48px;font-size:1rem;">
               ${escapeHtml(String(sec.score ?? 0))}
             </div>
-            ${editAllowed ? `
-              <button class="btn-outline-sard" style="padding:5px 10px;font-size:.8rem;" onclick="editSection(${idx})" title="تعديل المقطع">
-                <i class="fas fa-edit"></i>
-              </button>
-            ` : ''}
+            ${editAllowed ? `<button class="btn-outline-sard" style="padding:5px 10px;font-size:.8rem;" onclick="editSection(${idx})" title="تعديل المقطع"><i class="fas fa-edit"></i></button>` : ''}
           </div>
         </div>
         <div class="d-flex align-center gap-2 flex-wrap">
-          <span class="badge-sard badge-gold"><i class="fas fa-book"></i> جزء ${escapeHtml(String(sec.partNumber))} · ${escapeHtml(divLabel(div))} ${escapeHtml(String(sec.hizb))}</span>
+          <span class="badge-sard badge-gold"><i class="fas fa-book"></i> جزء ${escapeHtml(String(sec.partNumber))} · ${divLbl} ${escapeHtml(String(sec.hizb))}</span>
           ${sec.mistakes ? `<span class="badge-sard badge-fail">أخطاء: ${escapeHtml(String(sec.mistakes))}</span>` : ''}
           ${sec.warnings ? `<span class="badge-sard" style="background:#fef3c7;color:#92400e;">تنبيهات: ${escapeHtml(String(sec.warnings))}</span>` : ''}
           ${sec.failFace ? `<span class="badge-sard badge-fail"><i class="fas fa-comment"></i> وجه ${escapeHtml(sec.failFace)}</span>` : ''}
           ${sec.teacherName ? `<span class="text-muted" style="font-size:.78rem;"><i class="fas fa-user-tie"></i> ${escapeHtml(sec.teacherName)}</span>` : ''}
         </div>
-      `;
-    } else {
-      const score = hasData ? calcScore(sec, eff) : 0;
-      const passed = hasData ? score >= eff.passingScorePerSection : false;
-      const maxScore = 20 / div;
-      const usedCombos = getUsedCombos(idx);
-
-      card.innerHTML = `
-        <div class="d-flex justify-between align-center gap-2 flex-wrap" style="margin-bottom:12px;">
-          <span class="badge-sard badge-prim">مقطع ${idx + 1}</span>
-          <div class="d-flex align-center gap-2">
-            ${sec.wasSavedRead && eff.showDeleteSectionButton ? `
-              <button class="icon-trash-btn" onclick="deleteSavedSection(${idx})" title="حذف تسجيل المقطع" aria-label="حذف تسجيل المقطع">
-                <i class="fas fa-trash-alt"></i>
-              </button>
-            ` : ''}
-            ${hasData
-              ? `<div class="score-circle ${passed ? 'score-pass' : 'score-fail'}" id="score-circle-${idx}">
-                  ${escapeHtml(String(score))} <span style="font-size:.65rem;">/${escapeHtml(String(maxScore))}</span>
-                 </div>`
-              : `<div class="score-circle" style="border-color:var(--border);color:var(--text-muted);" id="score-circle-${idx}">—</div>`}
-          </div>
-        </div>
-
-        <div class="grid-2" style="margin-bottom:10px;">
-          <div>
-            <label class="text-muted" style="font-size:.8rem;display:block;margin-bottom:4px;">رقم الجزء</label>
-            <input type="number" class="native-input" id="partInput-${idx}"
-              value="${escapeAttr(String(sec.partNumber || ''))}"
-              min="1" max="30" placeholder="1-30"
-              onchange="setPartNumber(${idx}, this.value)"
-              oninput="setPartNumber(${idx}, this.value)"
-            />
-          </div>
-          <div>
-            <label class="text-muted" style="font-size:.8rem;display:block;margin-bottom:4px;">${escapeHtml(divLabel(div))}</label>
-            <div class="d-flex gap-2 flex-wrap">
-              ${divOptions.map(o => {
-                const comboKey = String(sec.partNumber || '') + '_' + String(o);
-                const isUsed = sec.partNumber && usedCombos[comboKey];
-                const isActive = String(sec.hizb) === String(o);
-                return `
-                  <button class="sel-btn ${isActive ? 'active' : ''} ${isUsed ? 'used-combo' : ''}"
-                    id="hizb-btn-${idx}-${o}"
-                    onclick="setHizb(${idx},${o},this)"
-                    style="padding:6px 14px;flex:1;text-align:center;${isUsed ? 'opacity:.4;cursor:not-allowed;' : ''}"
-                    ${isUsed ? 'disabled' : ''}>
-                    ${o}
-                  </button>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        </div>
-
-        <div class="counters-row">
-          <div>
-            <label class="text-muted" style="font-size:.8rem;display:block;margin-bottom:4px;">
-              <i class="fas fa-times-circle" style="color:var(--danger);"></i> أخطاء
-              <small style="font-size:.72rem;">(−${escapeHtml(String(eff.mistakeDeduction))})</small>
-            </label>
-            <div class="counter-wrap">
-              <button class="counter-btn" onclick="changeCount(${idx},'mistakes',-1)">−</button>
-              <span class="counter-val" id="mis-${idx}">${escapeHtml(String(sec.mistakes || 0))}</span>
-              <button class="counter-btn" onclick="changeCount(${idx},'mistakes',1)">+</button>
-            </div>
-          </div>
-          <div>
-            <label class="text-muted" style="font-size:.8rem;display:block;margin-bottom:4px;">
-              <i class="fas fa-exclamation-triangle" style="color:var(--warning);"></i> تنبيهات
-              <small style="font-size:.72rem;">(−${escapeHtml(String(eff.warningDeduction))})</small>
-            </label>
-            <div class="counter-wrap">
-              <button class="counter-btn" onclick="changeCount(${idx},'warnings',-1)">−</button>
-              <span class="counter-val" id="war-${idx}">${escapeHtml(String(sec.warnings || 0))}</span>
-              <button class="counter-btn" onclick="changeCount(${idx},'warnings',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        ${/* [تعديل 3] وجه الرسوب: يظهر دائماً عند تفعيل requireFailReason (مع إخفائه إذا كان ناجحاً) */
-          eff.requireFailReason ? `
-          <div id="fail-wrap-${idx}" style="margin-bottom:6px;display:${(!passed && hasData) ? 'block' : 'none'};">
-            <label class="text-muted" style="font-size:.8rem;display:block;margin-bottom:4px;">
-              <i class="fas fa-comment-alt" style="color:var(--danger);"></i> وجه الرسوب
-              <span style="color:var(--danger);font-weight:700;">*</span>
-            </label>
-            <input type="number" class="native-input" id="fail-${idx}" value="${escapeAttr(sec.failFace || '')}" placeholder="رقم وجه الرسوب..." min="1" onchange="setFailFace(${idx}, this.value)"/>
-          </div>
-        ` : ''}
-      `;
+      </div>`;
     }
 
-    container.appendChild(card);
+    const score = hasData ? calcScore(sec, eff) : 0;
+    const passed = hasData ? score >= eff.passingScorePerSection : false;
+    const usedCombos = getUsedCombos(idx);
+
+    const hizbBtns = divOptions.map(o => {
+      const comboKey = String(sec.partNumber || '') + '_' + String(o);
+      const isUsed = sec.partNumber && usedCombos[comboKey];
+      const isActive = String(sec.hizb) === String(o);
+      return `<button class="sel-btn ${isActive ? 'active' : ''} ${isUsed ? 'used-combo' : ''}"
+        id="hizb-btn-${idx}-${o}" onclick="setHizb(${idx},${o},this)"
+        style="padding:6px 14px;flex:1;text-align:center;${isUsed ? 'opacity:.4;cursor:not-allowed;' : ''}"
+        ${isUsed ? 'disabled' : ''}>${o}</button>`;
+    }).join('');
+
+    const scoreCircle = hasData
+      ? `<div class="score-circle ${passed ? 'score-pass' : 'score-fail'}" id="score-circle-${idx}">${escapeHtml(String(score))} <span style="font-size:.65rem;">/${escapeHtml(String(maxScore))}</span></div>`
+      : `<div class="score-circle" style="border-color:var(--border);color:var(--text-muted);" id="score-circle-${idx}">—</div>`;
+
+    return `<div id="sec-card-${idx}" class="${cardClass}">
+      <div class="d-flex justify-between align-center gap-2 flex-wrap" style="margin-bottom:12px;">
+        <span class="badge-sard badge-prim">مقطع ${idx + 1}</span>
+        <div class="d-flex align-center gap-2">
+          ${sec.wasSavedRead && eff.showDeleteSectionButton ? `<button class="icon-trash-btn" onclick="deleteSavedSection(${idx})" title="حذف تسجيل المقطع" aria-label="حذف تسجيل المقطع"><i class="fas fa-trash-alt"></i></button>` : ''}
+          ${scoreCircle}
+        </div>
+      </div>
+      <div class="grid-2" style="margin-bottom:10px;">
+        <div>
+          <label class="text-muted" style="font-size:.8rem;display:block;margin-bottom:4px;">رقم الجزء</label>
+          <input type="number" class="native-input" id="partInput-${idx}"
+            value="${escapeAttr(String(sec.partNumber || ''))}"
+            min="1" max="30" placeholder="1-30"
+            onchange="setPartNumber(${idx}, this.value)"
+            oninput="setPartNumber(${idx}, this.value)"/>
+        </div>
+        <div>
+          <label class="text-muted" style="font-size:.8rem;display:block;margin-bottom:4px;">${divLbl}</label>
+          <div class="d-flex gap-2 flex-wrap">${hizbBtns}</div>
+        </div>
+      </div>
+      <div class="counters-row">
+        <div>
+          <label class="text-muted" style="font-size:.8rem;display:block;margin-bottom:4px;">
+            <i class="fas fa-times-circle" style="color:var(--danger);"></i> أخطاء
+            <small style="font-size:.72rem;">(−${escapeHtml(String(eff.mistakeDeduction))})</small>
+          </label>
+          <div class="counter-wrap">
+            <button class="counter-btn" onclick="changeCount(${idx},'mistakes',-1)">−</button>
+            <span class="counter-val" id="mis-${idx}">${escapeHtml(String(sec.mistakes || 0))}</span>
+            <button class="counter-btn" onclick="changeCount(${idx},'mistakes',1)">+</button>
+          </div>
+        </div>
+        <div>
+          <label class="text-muted" style="font-size:.8rem;display:block;margin-bottom:4px;">
+            <i class="fas fa-exclamation-triangle" style="color:var(--warning);"></i> تنبيهات
+            <small style="font-size:.72rem;">(−${escapeHtml(String(eff.warningDeduction))})</small>
+          </label>
+          <div class="counter-wrap">
+            <button class="counter-btn" onclick="changeCount(${idx},'warnings',-1)">−</button>
+            <span class="counter-val" id="war-${idx}">${escapeHtml(String(sec.warnings || 0))}</span>
+            <button class="counter-btn" onclick="changeCount(${idx},'warnings',1)">+</button>
+          </div>
+        </div>
+      </div>
+      ${eff.requireFailReason ? `
+        <div id="fail-wrap-${idx}" style="margin-bottom:6px;display:${(!passed && hasData) ? 'block' : 'none'};">
+          <label class="text-muted" style="font-size:.8rem;display:block;margin-bottom:4px;">
+            <i class="fas fa-comment-alt" style="color:var(--danger);"></i> وجه الرسوب
+            <span style="color:var(--danger);font-weight:700;">*</span>
+          </label>
+          <input type="number" class="native-input" id="fail-${idx}" value="${escapeAttr(sec.failFace || '')}" placeholder="رقم وجه الرسوب..." min="1" onchange="setFailFace(${idx}, this.value)"/>
+        </div>
+      ` : ''}
+    </div>`;
   });
 
+  container.innerHTML = htmlParts.join('');
   updateKPI();
 }
 
@@ -2097,6 +2133,8 @@ function deleteSavedSection(idx) {
     showSpinner();
     _apiPost('saveRecord', {
       studentId: student.id,
+      studentName: student.name,
+      studentHalaqa: student.halaqa,
       teacherName: STATE.teacher,
       date: today,
       sections: nextSections
@@ -2203,13 +2241,18 @@ function doSaveRecord() {
                 STATE.records = recordsData.records || STATE.records;
                 STATE.recordsLoaded = true;
                 STATE.recordsLoading = false;
+                // تحديث كاش الطلاب في الخلفية
+                Promise.all([_apiGet('initData'), _apiGet('getStudents')]).then(([init, stu]) => {
+                  _cacheSet(CACHE_KEY_INIT, init);
+                  _cacheSet(CACHE_KEY_STUDENTS, stu);
+                }).catch(() => {});
                 startEvaluation();
               })
               .catch(() => {});
           });
       })
       .withFailureHandler(err => { hideSpinner(); showToast('خطأ في الحفظ: ' + (err.message || err), 'error'); })
-      .saveRecord({ studentId: student.id, teacherName: STATE.teacher, date: today, sections: STATE.evalSections });
+      .saveRecord({ studentId: student.id, studentName: student.name, studentHalaqa: student.halaqa, teacherName: STATE.teacher, date: today, sections: STATE.evalSections });
   });
 }
 
@@ -2271,15 +2314,11 @@ function loadAttendanceHalaqas(resetSelection = true) {
   }
 
   const grid = document.getElementById('attHalaqaGrid');
-  grid.innerHTML = '';
-
-  items.forEach(h => {
-    const btn = document.createElement('button');
-    btn.className = 'sel-btn';
-    btn.innerHTML = `<div class="fw-bold">${escapeHtml(h.name)}</div>`;
-    btn.onclick = () => selectAttHalaqa(h.id, h.name, btn);
-    grid.appendChild(btn);
-  });
+  grid.innerHTML = items.map(h =>
+    `<button class="sel-btn" onclick="selectAttHalaqa('${jsString(String(h.id))}','${jsString(String(h.name))}',this)">
+      <div class="fw-bold">${escapeHtml(h.name)}</div>
+    </button>`
+  ).join('');
 
   if (resetSelection) {
     STATE.attHalaqa = null;
@@ -2549,18 +2588,20 @@ function doSaveSettings() {
   if (lockCode) newSettings.settingsLockCode = lockCode;
 
   showSpinner();
+  STATE.recordsLoading = true;
   google.script.run
     .withSuccessHandler(() => {
       google.script.run
         .withSuccessHandler(() => {
           hideSpinner();
+          _cacheClear(); // مسح الكاش لتحميل الإعدادات الجديدة
           Swal.fire({
             icon:'success',
             title:'تم الحفظ!',
             timer:1800,
             timerProgressBar:true
           });
-          loadData();
+          loadData(true);
         })
         .withFailureHandler(err => {
           hideSpinner();
