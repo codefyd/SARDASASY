@@ -13,8 +13,8 @@
  */
 
 // ===== اضبط هذين القيمتين من Supabase Dashboard → Settings → API =====
-const SARD_SUPABASE_URL  = 'https://YOUR_PROJECT.supabase.co';
-const SARD_SUPABASE_ANON = 'YOUR_ANON_KEY';
+const SARD_SUPABASE_URL  = 'https://wqnnwovcteqkvoagsqmi.supabase.co';
+const SARD_SUPABASE_ANON = 'sb_publishable_VcWBrkjfyRkmR36y2VcLcA_yJRNEFbn';
 // ======================================================================
 
 class SardDB {
