@@ -6,6 +6,7 @@
   <title>تقرير الحلق التفصيلي</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap"/>
+  <script src="assets/js/config.js"></script>
   <style>
     :root{
       --primary:#014979;--primary-dk:#013560;--primary-lt:#e8f2fb;
@@ -151,8 +152,7 @@
 </div>
 
 <script>
-const API="https://script.google.com/macros/s/AKfycbwhK6Xt_lWe4jGidKO4n-yT774a047rvxRhzX6fklakJM0_5QXEEmtWz-GpjPGw2ZAS/exec";
-
+const API = window.APP_CONFIG.API_URL;
 async function apiGet(action, params){
   var url=new URL(API);
   url.searchParams.set('action',action);
