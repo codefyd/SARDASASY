@@ -217,8 +217,16 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .btn-copy{background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);padding:6px 14px;font-family:'Tajawal',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;flex-shrink:0;}
 .btn-copy:hover{background:var(--primary-dk);}
 
-/* ===== SPINNER ===== */
-.spinner-wrap{display:flex;align-items:center;justify-content:center;padding:60px;gap:14px;flex-direction:column;}
+/* ===== VAR CHIPS ===== */
+.var-chip{padding:4px 11px;border-radius:20px;border:1.5px solid rgba(1,73,121,.2);background:#fff;color:var(--primary);font-family:'Tajawal',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;direction:ltr;}
+.var-chip:hover{background:var(--primary);color:#fff;border-color:var(--primary);}
+.btn-wa{background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px 18px;font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s;width:100%;}
+.btn-wa:hover{opacity:.92;transform:translateY(-1px);}
+.wa-msg-preview{background:#e7fdd8;border:1px solid #c3f0a0;border-radius:var(--radius-sm);padding:12px 14px;font-size:.8rem;color:#1a4a0a;line-height:1.7;white-space:pre-wrap;direction:rtl;margin-top:8px;max-height:140px;overflow-y:auto;}
+
+/* ===== TOGGLE CHECKED STATE ===== */
+#toggleAutoApprove:checked ~ #toggleTrack{background:#25d366;}
+#toggleAutoApprove:checked ~ #toggleThumb{transform:translateX(-16px);}
 .spinner{width:40px;height:40px;border:4px solid var(--primary-lt);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
@@ -273,14 +281,37 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   <a class="nav-item" onclick="switchTab('stats')">
     <i class="fas fa-chart-line"></i> إحصائيات
   </a>
+  <a class="nav-item" onclick="switchTab('wa_settings')">
+    <i class="fab fa-whatsapp"></i> إعدادات الرسالة
+  </a>
 
   <div class="sidebar-footer">
     <div class="nav-item" style="opacity:.7;cursor:default;">
       <i class="fas fa-user-shield"></i>
       <div>
-        <div style="font-size:.8rem;color:#fff;font-weight:700;">مشرف المنصة</div>
-        <div style="font-size:.7rem;color:rgba(255,255,255,.45);">admin@sard.app</div>
+        <div style="font-size:.8rem;color:#fff;font-weight:700;" id="adminName">مشرف المنصة</div>
+        <div style="font-size:.7rem;color:rgba(255,255,255,.45);" id="adminEmail">admin@sard.app</div>
       </div>
+    </div>
+    <!-- إعداد وضع القبول -->
+    <div style="margin:8px 8px 0;padding:10px 12px;background:rgba(255,255,255,.06);border-radius:9px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.75);font-weight:700;">القبول التلقائي</div>
+        <div style="font-size:.66rem;color:rgba(255,255,255,.4);" id="autoApproveHint">مقفل — مراجعة يدوية</div>
+      </div>
+      <label style="position:relative;width:36px;height:20px;flex-shrink:0;cursor:pointer;">
+        <input type="checkbox" id="toggleAutoApprove" onchange="setAutoApprove(this.checked)"
+          style="position:absolute;opacity:0;width:100%;height:100%;cursor:pointer;margin:0;z-index:2;">
+        <span id="toggleTrack" style="position:absolute;inset:0;background:rgba(255,255,255,.2);border-radius:10px;transition:background .2s;"></span>
+        <span id="toggleThumb" style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;pointer-events:none;"></span>
+      </label>
+    </div>
+    <!-- رقم الواتساب الثابت -->
+    <div style="margin:6px 8px 0;padding:8px 12px;background:rgba(255,255,255,.06);border-radius:9px;">
+      <div style="font-size:.7rem;color:rgba(255,255,255,.4);margin-bottom:3px;">رقم واتساب الإرسال</div>
+      <input id="adminWaPhone" type="tel" placeholder="966501234567"
+        onchange="saveAdminPhone(this.value)"
+        style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);font-family:'Tajawal',sans-serif;font-size:.78rem;padding:2px 0;outline:none;" dir="ltr"/>
     </div>
   </div>
 </nav>
@@ -350,6 +381,110 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     </div>
 
   </div><!-- /page-wrap -->
+
+  <!-- ===== صفحة إعدادات رسالة الواتساب ===== -->
+  <div class="page-wrap" id="pageWaSettings" style="display:none;max-width:760px;">
+
+    <div class="card-sard" style="overflow:visible;">
+      <div class="card-header">
+        <div class="card-title"><i class="fab fa-whatsapp" style="color:#25d366;"></i> إعدادات رسالة الواتساب</div>
+      </div>
+      <div style="padding:20px 24px;">
+
+        <!-- متغيرات متاحة -->
+        <div style="background:var(--primary-lt);border-radius:var(--radius-sm);padding:13px 16px;margin-bottom:18px;">
+          <div style="font-size:.8rem;font-weight:700;color:var(--primary);margin-bottom:8px;">
+            <i class="fas fa-code fa-sm"></i> المتغيرات المتاحة — انقر للإضافة
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="var-chip" onclick="insertVar('{اسم_المجمع}')">{اسم_المجمع}</button>
+            <button class="var-chip" onclick="insertVar('{مدير_المجمع}')">{مدير_المجمع}</button>
+            <button class="var-chip" onclick="insertVar('{الرابط}')">{الرابط}</button>
+            <button class="var-chip" onclick="insertVar('{المدينة}')">{المدينة}</button>
+            <button class="var-chip" onclick="insertVar('{اسم_الدورة}')">{اسم_الدورة}</button>
+          </div>
+        </div>
+
+        <!-- محرر النص -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:7px;">نص الرسالة</div>
+          <textarea id="waTplEditor"
+            oninput="refreshPreview()"
+            style="width:100%;min-height:180px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Tajawal',sans-serif;font-size:.9rem;resize:vertical;line-height:1.8;transition:border-color .2s;direction:rtl;"
+            onfocus="this.style.borderColor='var(--primary)'"
+            onblur="this.style.borderColor='var(--border)'"
+            placeholder="اكتب نص الرسالة..."></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;">
+            <span style="font-size:.73rem;color:var(--text-muted);" id="tplCharCount">0 حرف</span>
+            <button onclick="resetTemplate()" style="font-size:.75rem;color:var(--text-muted);background:none;border:none;cursor:pointer;text-decoration:underline;">إعادة للنص الافتراضي</button>
+          </div>
+        </div>
+
+        <!-- فاصل -->
+        <div style="border-top:1px solid var(--border);margin:18px 0;"></div>
+
+        <!-- معاينة حية -->
+        <div style="margin-bottom:18px;">
+          <div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:7px;">
+            <i class="fas fa-eye fa-sm" style="color:var(--text-muted);"></i> معاينة الرسالة
+          </div>
+          <!-- بيانات المعاينة -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
+            <div>
+              <div style="font-size:.73rem;color:var(--text-muted);margin-bottom:3px;">اسم مجمع تجريبي</div>
+              <input id="prev_org" type="text" value="مجمع القرآن الكريم" oninput="refreshPreview()"
+                style="width:100%;padding:5px 9px;border:1px solid var(--border);border-radius:6px;font-family:'Tajawal',sans-serif;font-size:.78rem;"/>
+            </div>
+            <div>
+              <div style="font-size:.73rem;color:var(--text-muted);margin-bottom:3px;">اسم المدير</div>
+              <input id="prev_mgr" type="text" value="أحمد الغامدي" oninput="refreshPreview()"
+                style="width:100%;padding:5px 9px;border:1px solid var(--border);border-radius:6px;font-family:'Tajawal',sans-serif;font-size:.78rem;"/>
+            </div>
+            <div>
+              <div style="font-size:.73rem;color:var(--text-muted);margin-bottom:3px;">اسم الدورة</div>
+              <input id="prev_session" type="text" value="دورة صيف ١٤٤٦" oninput="refreshPreview()"
+                style="width:100%;padding:5px 9px;border:1px solid var(--border);border-radius:6px;font-family:'Tajawal',sans-serif;font-size:.78rem;"/>
+            </div>
+          </div>
+
+          <!-- فقاعة الواتساب -->
+          <div style="background:#e5ddd5;border-radius:12px;padding:16px;min-height:100px;position:relative;">
+            <!-- شريط واتساب وهمي -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(0,0,0,.1);">
+              <div style="width:34px;height:34px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;">
+                <i class="fab fa-whatsapp" style="color:#fff;font-size:.9rem;"></i>
+              </div>
+              <div>
+                <div style="font-size:.8rem;font-weight:700;color:#1a1a1a;">منصة السرد</div>
+                <div style="font-size:.7rem;color:#667781;">متصل الآن</div>
+              </div>
+            </div>
+            <!-- الفقاعة -->
+            <div style="display:flex;justify-content:flex-end;">
+              <div style="background:#dcf8c6;border-radius:10px 2px 10px 10px;padding:10px 13px;max-width:85%;box-shadow:0 1px 2px rgba(0,0,0,.13);">
+                <div id="waMsgPreviewLive" style="font-size:.82rem;color:#1a1a1a;white-space:pre-wrap;line-height:1.7;direction:rtl;">—</div>
+                <div style="text-align:left;font-size:.68rem;color:#667781;margin-top:4px;">الآن ✓✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- حفظ -->
+        <div style="display:flex;gap:10px;">
+          <button onclick="saveWaTemplate()" id="btnSaveTpl"
+            style="flex:1;padding:12px;border:none;border-radius:var(--radius-sm);background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;font-family:'Tajawal',sans-serif;font-size:.95rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <i class="fab fa-whatsapp"></i> حفظ الرسالة
+          </button>
+          <button onclick="testWaTemplate()"
+            style="padding:12px 20px;border:1.5px solid #25d366;border-radius:var(--radius-sm);background:#fff;color:#128c7e;font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+            <i class="fas fa-paper-plane fa-sm"></i> اختبار على رقمي
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /pageWaSettings -->
 </div><!-- /main -->
 
 <!-- ===== DRAWER ===== -->
@@ -386,32 +521,138 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 <!-- ===== TOAST CONTAINER ===== -->
 <div class="toast-wrap" id="toastWrap"></div>
 
+<script src="supabase-client.js"></script>
 <script>
-/* ============================================================
-   DATA — في الإنتاج يُستبدل بـ Supabase query
-   مثال: const { data } = await supabase.from('organizations').select('*, sessions(*)')
-============================================================ */
-var allOrgs = [
-  {id:'ORG-001',name:'مجمع القرآن الكريم بالرياض',city:'الرياض',manager:'أحمد الغامدي',email:'ahmed@quran-r.com',phone:'0501234567',session:'دورة صيف ١٤٤٦',studentsCount:'50-100',importMethod:'csv',status:'pending',submittedAt:'2025-01-10T08:30:00',notes:''},
-  {id:'ORG-002',name:'مجمع النور للتحفيظ',city:'جدة',manager:'خالد السعدي',email:'info@alnoor.com',phone:'0559876543',session:'دورة رمضان ١٤٤٦',studentsCount:'20-50',importMethod:'sheets',sheetsUrl:'https://docs.google.com/spreadsheets/d/1abc123',status:'pending',submittedAt:'2025-01-11T10:15:00',notes:''},
-  {id:'ORG-003',name:'مجمع الفرقان',city:'الدمام',manager:'سعيد المنصور',email:'saeed@furqan.sa',phone:'0503344556',session:'دورة صيف ١٤٤٦',studentsCount:'100-200',importMethod:'csv',status:'active',submittedAt:'2025-01-08T09:00:00',approvedAt:'2025-01-09T11:00:00',notes:'',inviteToken:'FRQ-abc123'},
-  {id:'ORG-004',name:'مجمع الإتقان',city:'المدينة المنورة',manager:'عبدالله الزهراني',email:'admin@itqan.com',phone:'0555566778',session:'دورة شتاء ١٤٤٦',studentsCount:'1-20',importMethod:'manual',status:'rejected',submittedAt:'2025-01-05T14:00:00',notes:'البريد الإلكتروني غير صحيح'},
-  {id:'ORG-005',name:'مجمع الإحسان',city:'أبها',manager:'محمد القحطاني',email:'ihsan@mail.com',phone:'0501122334',session:'دورة صيف ١٤٤٦',studentsCount:'20-50',importMethod:'later',status:'pending',submittedAt:'2025-01-12T07:45:00',notes:''},
-];
-
+var allOrgs = [];
 var currentFilter = 'all';
 var pendingAction = null;
 var currentOrgId = null;
+var db = new SardDB();
 
 /* ============ INIT ============ */
-window.onload = function(){ loadData(); };
+window.onload = async function(){
+  // التحقق من تسجيل الدخول
+  const user = await db.init();
+  if(!user || !db.isSuperAdmin()){
+    showLoginScreen();
+    return;
+  }
+  document.getElementById('adminName').textContent  = user.full_name || user.email || 'مشرف';
+  document.getElementById('adminEmail').textContent = user.email || '';
+  loadPlatformSettings();
+  loadData();
+};
 
-function loadData(){
-  setTimeout(function(){
-    updateKPIs();
+function showLoginScreen(){
+  document.body.innerHTML = `
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);">
+  <div style="background:#fff;border-radius:16px;padding:36px;width:360px;box-shadow:0 16px 48px rgba(1,73,121,.16);border:1px solid var(--border);">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="width:56px;height:56px;background:var(--primary);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;">
+        <i class="fas fa-quran" style="color:var(--gold);font-size:1.4rem;"></i>
+      </div>
+      <h2 style="font-size:1.1rem;font-weight:800;color:var(--primary);">لوحة إدارة منصة السرد</h2>
+      <p style="font-size:.82rem;color:var(--text-muted);margin-top:4px;">للمشرفين فقط</p>
+    </div>
+    <div id="loginErr" style="display:none;background:#fee2e2;border-radius:8px;padding:10px 14px;font-size:.82rem;color:#991b1b;margin-bottom:14px;"></div>
+    <div style="margin-bottom:12px;">
+      <div style="font-size:.82rem;font-weight:600;margin-bottom:5px;">البريد الإلكتروني</div>
+      <input id="li_email" type="email" placeholder="admin@sard.app" dir="ltr"
+        style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'Tajawal',sans-serif;font-size:.9rem;" />
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:.82rem;font-weight:600;margin-bottom:5px;">كلمة المرور</div>
+      <input id="li_pass" type="password" placeholder="••••••••" dir="ltr"
+        style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'Tajawal',sans-serif;font-size:.9rem;" />
+    </div>
+    <button onclick="doLogin()" id="li_btn"
+      style="width:100%;padding:12px;border:none;border-radius:9px;background:var(--primary);color:#fff;font-family:'Tajawal',sans-serif;font-size:.95rem;font-weight:800;cursor:pointer;">
+      تسجيل الدخول
+    </button>
+  </div></div>`;
+}
+
+async function doLogin(){
+  var email=document.getElementById('li_email').value.trim();
+  var pass=document.getElementById('li_pass').value;
+  var btn=document.getElementById('li_btn');
+  var errEl=document.getElementById('loginErr');
+  btn.textContent='...جاري التحقق'; btn.disabled=true; errEl.style.display='none';
+  try {
+    await db.login(email, pass);
+    if(!db.isSuperAdmin()) throw new Error('ليس لديك صلاحية الدخول كمشرف عام');
+    location.reload();
+  } catch(e){
+    errEl.textContent=e.message; errEl.style.display='block';
+    btn.textContent='تسجيل الدخول'; btn.disabled=false;
+  }
+}
+
+async function loadData(){
+  try {
+    var tbl=document.getElementById('tblBody');
+    tbl.innerHTML='<tr><td colspan="10" class="empty-row"><div class="spinner-wrap"><div class="spinner"></div><span style="color:var(--text-muted);font-size:.85rem;">جاري التحميل...</span></div></td></tr>';
+
+    var {orgs, stats} = await db.getAdminStats();
+
+    // تطبيع أسماء الحقول (Supabase يُعيد snake_case)
+    allOrgs = orgs.map(function(o){ return {
+      id:           o.id,
+      name:         o.name,
+      city:         o.city||'—',
+      manager:      o.manager_name||'—',
+      email:        o.email,
+      phone:        o.phone||'—',
+      session:      '—',  // يُجلب منفصلاً إذا احتجنا
+      studentsCount:'—',
+      importMethod: '—',
+      status:       o.status,
+      submittedAt:  o.created_at,
+      approvedAt:   o.approved_at||null,
+      notes:        o.notes||'',
+      inviteToken:  null,  // يُجلب عند الفتح
+    };});
+
+    // جلب أسماء الدورات دفعةً واحدة
+    try {
+      var sessions = await db._get('sessions','select=org_id,name&order=created_at.asc');
+      if(sessions){
+        var smap={};
+        sessions.forEach(function(s){ if(!smap[s.org_id]) smap[s.org_id]=s.name; });
+        allOrgs.forEach(function(o){ if(smap[o.id]) o.session=smap[o.id]; });
+      }
+    } catch(e){ /* تجاهل */ }
+
+    document.getElementById('kTotal').textContent   = stats.total;
+    document.getElementById('kPending').textContent = stats.pending;
+    document.getElementById('kActive').textContent  = stats.active;
+    document.getElementById('kRejected').textContent= stats.rejected + stats.suspended;
+    document.getElementById('navBadge').textContent = stats.pending;
+    document.getElementById('navBadge').style.display = stats.pending ? '' : 'none';
+
     renderTable();
     updateNavBadges();
-  }, 400);
+  } catch(err){
+    console.error('loadData:', err);
+    showToast('فشل تحميل البيانات: '+err.message,'error');
+  }
+}
+
+function updateKPIs(){
+  var t=allOrgs.length;
+  var p=allOrgs.filter(function(o){return o.status==='pending';}).length;
+  var a=allOrgs.filter(function(o){return o.status==='active';}).length;
+  var r=allOrgs.filter(function(o){return o.status==='rejected'||o.status==='suspended';}).length;
+  document.getElementById('kTotal').textContent=t;
+  document.getElementById('kPending').textContent=p;
+  document.getElementById('kActive').textContent=a;
+  document.getElementById('kRejected').textContent=r;
+}
+
+function updateNavBadges(){
+  var p=allOrgs.filter(function(o){return o.status==='pending';}).length;
+  document.getElementById('navBadge').textContent=p;
+  document.getElementById('navBadge').style.display=p?'':'none';
 }
 
 function updateKPIs(){
@@ -431,7 +672,43 @@ function updateNavBadges(){
   document.getElementById('navBadge').style.display=p?'':'none';
 }
 
-/* ============ FILTER / RENDER ============ */
+/* ============ PLATFORM SETTINGS ============ */
+var _platformSettings = { autoApprove: false, adminPhone: '', waTemplate: '' };
+
+async function loadPlatformSettings(){
+  try {
+    var rows = await db._get('platform_settings','select=key,value');
+    if(rows) rows.forEach(function(r){
+      if(r.key==='auto_approve')  _platformSettings.autoApprove = r.value==='true';
+      if(r.key==='admin_wa_phone')_platformSettings.adminPhone  = r.value||'';
+      if(r.key==='wa_template')   _platformSettings.waTemplate  = r.value||'';
+    });
+  } catch(e){ /* جدول غير موجود بعد — القيم الافتراضية */ }
+  // تحديث الواجهة
+  document.getElementById('toggleAutoApprove').checked = _platformSettings.autoApprove;
+  syncToggleUI(_platformSettings.autoApprove);
+  document.getElementById('adminWaPhone').value = _platformSettings.adminPhone;
+}
+
+async function setAutoApprove(val){
+  syncToggleUI(val);
+  _platformSettings.autoApprove = val;
+  try {
+    await db._upsert('platform_settings',{key:'auto_approve', value: val?'true':'false'});
+    showToast(val ? 'تم تفعيل القبول التلقائي ✅' : 'القبول التلقائي مُعطّل — مراجعة يدوية', val?'success':'warning');
+  } catch(e){ showToast('فشل الحفظ: '+e.message,'error'); }
+}
+
+function syncToggleUI(val){
+  document.getElementById('autoApproveHint').textContent = val ? 'مفتوح — قبول فوري' : 'مقفل — مراجعة يدوية';
+}
+
+async function saveAdminPhone(val){
+  _platformSettings.adminPhone = val.replace(/\D/g,'');
+  try {
+    await db._upsert('platform_settings',{key:'admin_wa_phone', value: _platformSettings.adminPhone});
+  } catch(e){ console.warn('saveAdminPhone:', e.message); }
+}
 function filterStatus(s){
   currentFilter=s;
   ['all','pending','active','rejected','suspended'].forEach(function(x){
@@ -534,10 +811,17 @@ function openDrawer(id){
 
   if(o.status==='active' && o.inviteToken){
     var link='https://sard.app/join/'+o.inviteToken;
+    var waMsg = buildWaMessage(o, link);
+    var waPhone = _platformSettings.adminPhone || '';
+    var waUrl = 'https://wa.me/'+waPhone+'?text='+encodeURIComponent(waMsg);
     body+='<div class="detail-section">';
-    body+='<div class="detail-section-title">رابط المشرف</div>';
+    body+='<div class="detail-section-title">رابط برنامج السرد</div>';
     body+='<div class="link-box"><span class="link-url" id="invLinkUrl">'+escH(link)+'</span><button class="btn-copy" onclick="copyLink(\''+escH(link)+'\')">نسخ</button></div>';
-    body+='<div style="font-size:.75rem;color:var(--text-muted);margin-top:6px;"><i class="fas fa-info-circle fa-xs"></i> هذا الرابط يوزعه مدير المجمع على المسمعين</div>';
+    body+='<div style="font-size:.75rem;color:var(--text-muted);margin:6px 0 10px;"><i class="fas fa-info-circle fa-xs"></i> أرسل هذا الرابط لمدير المجمع ليوزعه على المسمعين</div>';
+    // معاينة رسالة الواتساب
+    body+='<div style="font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:5px;">رسالة الواتساب الجاهزة</div>';
+    body+='<div class="wa-msg-preview" id="waMsgPreview">'+escH(waMsg)+'</div>';
+    body+='<button class="btn-wa" style="margin-top:10px;" onclick="sendViaWhatsApp(\''+escH(link)+'\',\''+escH(o.name)+'\',\''+escH(o.manager)+'\',\''+escH(o.phone||'')+'\')"><i class="fab fa-whatsapp fa-lg"></i> إرسال عبر واتساب ويب</button>';
     body+='</div>';
   }
 
@@ -576,22 +860,47 @@ function detRow(label, val, ltr, html){
     +'</div>';
 }
 
-function saveNotes(){
+async function saveNotes(){
   var org=allOrgs.find(function(x){return x.id===currentOrgId;});
   if(!org) return;
-  org.notes=document.getElementById('orgNotes').value;
-  /* SUPABASE: await supabase.from('organizations').update({notes: org.notes}).eq('id', org.id) */
-  showToast('تم حفظ الملاحظة','success');
+  var notes=document.getElementById('orgNotes').value;
+  try {
+    await db.saveOrgNotes(org.id, notes);
+    org.notes=notes;
+    showToast('تم حفظ الملاحظة','success');
+  } catch(e){
+    showToast('فشل الحفظ: '+e.message,'error');
+  }
+}
+
+/* ============ WHATSAPP ============ */
+function buildWaMessage(org, link){
+  var tpl = _platformSettings.waTemplate ||
+    'السلام عليكم ورحمة الله،\n\nأبشر {مدير_المجمع}،\n\nتم تفعيل منصة السرد لـ *{اسم_المجمع}* 🎉\n\nرابط برنامج السرد الخاص بمجمعكم:\n{الرابط}\n\nوزّع الرابط على المسمعين عند بدء جلسات السرد.\n\nمع التوفيق والتيسير 🤍';
+  return tpl
+    .replace('{مدير_المجمع}', org.manager||'')
+    .replace('{اسم_المجمع}',  org.name||'')
+    .replace('{الرابط}',      link||'');
+}
+
+function sendViaWhatsApp(link, orgName, manager, orgPhone){
+  // رقم المسؤول الذي سجّل في الطلب هو المستقبل
+  var phone = orgPhone.replace(/\D/g,'');
+  if(phone.startsWith('0')) phone = '966'+phone.slice(1);
+  var fakeOrg = {name: orgName, manager: manager};
+  var msg = buildWaMessage(fakeOrg, link);
+  var url = 'https://wa.me/'+phone+'?text='+encodeURIComponent(msg);
+  window.open(url,'_blank','noopener');
 }
 
 /* ============ CONFIRM / ACTIONS ============ */
 function confirmAction(action, orgId){
   pendingAction={action,orgId};
   var cfg={
-    approve:{icon:'✅',title:'قبول الطلب',msg:'سيتم إرسال بريد إلكتروني للمجمع بمعلومات الدخول وإنشاء حسابه.',btnClass:'btn-confirm-approve',btnTxt:'قبول وتفعيل',note:false},
+    approve:{icon:'✅',title:'قبول الطلب',msg:'سيتم إنشاء رابط برنامج السرد للمجمع. بعد القبول يمكنك إرساله عبر واتساب مباشرة من تفاصيل المجمع.',btnClass:'btn-confirm-approve',btnTxt:'قبول وتفعيل',note:false},
     reject: {icon:'❌',title:'رفض الطلب',msg:'هل أنت متأكد من رفض هذا الطلب؟ يمكنك إضافة سبب الرفض.',btnClass:'btn-confirm-reject',btnTxt:'رفض',note:true},
     suspend:{icon:'⏸️',title:'إيقاف المجمع',msg:'سيُعلّق وصول المجمع مؤقتاً. يمكن إعادة التفعيل لاحقاً.',btnClass:'btn-confirm-reject',btnTxt:'إيقاف',note:true},
-    reactivate:{icon:'🔄',title:'إعادة التفعيل',msg:'سيُعاد تفعيل حساب المجمع وإرسال بريد إخطار.',btnClass:'btn-confirm-approve',btnTxt:'إعادة تفعيل',note:false},
+    reactivate:{icon:'🔄',title:'إعادة التفعيل',msg:'سيُعاد تفعيل حساب المجمع.',btnClass:'btn-confirm-approve',btnTxt:'إعادة تفعيل',note:false},
   };
   var c=cfg[action];
   document.getElementById('confirmIcon').textContent=c.icon;
@@ -607,45 +916,54 @@ function confirmAction(action, orgId){
 
 function closeConfirm(){ document.getElementById('confirmOverlay').classList.remove('open'); pendingAction=null; }
 
-function executeAction(){
+async function executeAction(){
   if(!pendingAction) return;
   var {action,orgId}=pendingAction;
   var org=allOrgs.find(function(x){return x.id===orgId;});
   if(!org){closeConfirm();return;}
 
-  var note=document.getElementById('confirmNoteText').value;
+  var note=document.getElementById('confirmNoteText').value.trim();
+  var confirmBtn=document.getElementById('confirmBtn');
+  confirmBtn.disabled=true;
+  confirmBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جاري التنفيذ...';
 
-  /* ===== SUPABASE CALLS (استبدل هذا) =====
-  if(action==='approve'){
-    await supabase.from('organizations').update({status:'active', approved_at: new Date(), notes}).eq('id', orgId);
-    // إرسال بريد عبر Edge Function
-    await supabase.functions.invoke('send-approval-email', { body: { orgId } });
-  }
-  if(action==='reject'){
-    await supabase.from('organizations').update({status:'rejected', notes}).eq('id', orgId);
-    await supabase.functions.invoke('send-rejection-email', { body: { orgId, reason: note } });
-  }
-  ========================================= */
+  try {
+    if(action==='approve'){
+      var result = await db.approveOrganization(orgId, note);
+      org.status='active';
+      org.approvedAt=new Date().toISOString();
+      org.inviteToken=result.inviteToken;
+      closeConfirm();
+      updateKPIs(); renderTable(); updateNavBadges();
+      // افتح الـ drawer مباشرة — الرابط وزر الواتساب جاهزان
+      showToast('تم القبول ✅ — أرسل الرابط الآن عبر واتساب','success');
+      openDrawer(orgId);
 
-  var newStatus={approve:'active',reject:'rejected',suspend:'suspended',reactivate:'active'}[action];
-  org.status=newStatus;
-  if(note) org.notes=note;
-  if(action==='approve'){
-    org.approvedAt=new Date().toISOString();
-    org.inviteToken=orgId.toLowerCase().replace('org-','')+'-'+Math.random().toString(36).slice(2,7);
-    showToast('تم قبول المجمع وإرسال بريد التفعيل ✅','success');
-  } else if(action==='reject'){
-    showToast('تم رفض الطلب','warning');
-  } else if(action==='suspend'){
-    showToast('تم إيقاف المجمع مؤقتاً','warning');
-  } else if(action==='reactivate'){
-    showToast('تم إعادة تفعيل المجمع ✅','success');
-  }
+    } else if(action==='reject'){
+      await db.rejectOrganization(orgId, note);
+      org.status='rejected'; org.notes=note;
+      closeConfirm(); updateKPIs(); renderTable(); updateNavBadges();
+      showToast('تم رفض الطلب وإخطار المجمع','warning');
 
-  closeConfirm();
-  updateKPIs();
-  renderTable();
-  updateNavBadges();
+    } else if(action==='suspend'){
+      await db.suspendOrganization(orgId, note);
+      org.status='suspended'; org.notes=note;
+      closeConfirm(); updateKPIs(); renderTable(); updateNavBadges();
+      showToast('تم إيقاف المجمع مؤقتاً','warning');
+
+    } else if(action==='reactivate'){
+      await db.reactivateOrganization(orgId);
+      org.status='active';
+      closeConfirm(); updateKPIs(); renderTable(); updateNavBadges();
+      showToast('تم إعادة تفعيل المجمع ✅','success');
+      openDrawer(orgId);
+    }
+
+  } catch(err){
+    showToast('فشل التنفيذ: '+(err.message||'خطأ'),'error');
+    confirmBtn.disabled=false;
+    confirmBtn.innerHTML='تأكيد';
+  }
 }
 
 /* ============ INVITE MODAL ============ */
@@ -662,16 +980,117 @@ function copyLink(url){
 }
 
 /* ============ TAB SWITCH ============ */
+var _mainPages = ['pageWrap','pageWaSettings'];
+
 function switchTab(tab){
-  var titles={requests:'طلبات التسجيل',orgs:'المجمعات الفعّالة',sessions:'الدورات',imports:'طلبات الاستيراد',links:'الروابط الفعّالة',stats:'الإحصائيات'};
-  document.getElementById('pageTitle').textContent=titles[tab]||tab;
+  var titles={
+    requests:'طلبات التسجيل', orgs:'المجمعات الفعّالة',
+    sessions:'الدورات', imports:'طلبات الاستيراد',
+    links:'الروابط الفعّالة', stats:'الإحصائيات',
+    wa_settings:'إعدادات رسالة الواتساب'
+  };
+  document.getElementById('pageTitle').textContent = titles[tab]||tab;
   document.querySelectorAll('.nav-item').forEach(function(el){el.classList.remove('active');});
-  event.currentTarget.classList.add('active');
+  if(event && event.currentTarget) event.currentTarget.classList.add('active');
+
+  // إظهار / إخفاء الصفحات
+  var mainWrap = document.querySelector('.page-wrap');
+  var waPage   = document.getElementById('pageWaSettings');
+  var kpi      = document.getElementById('kpiStrip');
+  var fbar     = document.querySelector('.filter-bar');
+  var tcard    = document.querySelector('.card-sard');
+
+  if(tab === 'wa_settings'){
+    if(mainWrap) mainWrap.style.display='none';
+    waPage.style.display='block';
+    loadWaSettingsPage();
+    return;
+  }
+
+  if(mainWrap) mainWrap.style.display='';
+  waPage.style.display='none';
+
   if(tab==='requests' || tab==='orgs'){
     if(tab==='orgs') currentFilter='active';
     else currentFilter='all';
     filterStatus(currentFilter);
   }
+}
+
+/* ============ صفحة إعدادات الواتساب ============ */
+var _tplEditor = null;
+
+function loadWaSettingsPage(){
+  var ta = document.getElementById('waTplEditor');
+  if(!ta) return;
+  var defaultTpl = 'السلام عليكم ورحمة الله،\n\nأبشر {مدير_المجمع}،\n\nتم تفعيل منصة السرد لـ *{اسم_المجمع}* 🎉\n\nرابط برنامج السرد الخاص بمجمعكم:\n{الرابط}\n\nوزّع الرابط على المسمعين عند بدء جلسات السرد.\n\nمع التوفيق والتيسير 🤍';
+  ta.value = _platformSettings.waTemplate || defaultTpl;
+  refreshPreview();
+}
+
+function insertVar(v){
+  var ta = document.getElementById('waTplEditor');
+  var start = ta.selectionStart;
+  var end   = ta.selectionEnd;
+  ta.value  = ta.value.slice(0,start) + v + ta.value.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + v.length;
+  ta.focus();
+  refreshPreview();
+}
+
+function refreshPreview(){
+  var ta  = document.getElementById('waTplEditor');
+  var tpl = ta.value;
+  var org = document.getElementById('prev_org').value     || 'مجمع القرآن الكريم';
+  var mgr = document.getElementById('prev_mgr').value     || 'أحمد';
+  var ses = document.getElementById('prev_session').value || 'دورة صيف ١٤٤٦';
+  var link= 'https://sard.app/join/ABC123xyz';
+  var out = tpl
+    .replace(/\{اسم_المجمع\}/g, org)
+    .replace(/\{مدير_المجمع\}/g, mgr)
+    .replace(/\{الرابط\}/g, link)
+    .replace(/\{المدينة\}/g, 'الرياض')
+    .replace(/\{اسم_الدورة\}/g, ses);
+  document.getElementById('waMsgPreviewLive').textContent = out || '—';
+  document.getElementById('tplCharCount').textContent = tpl.length + ' حرف';
+}
+
+function resetTemplate(){
+  var def = 'السلام عليكم ورحمة الله،\n\nأبشر {مدير_المجمع}،\n\nتم تفعيل منصة السرد لـ *{اسم_المجمع}* 🎉\n\nرابط برنامج السرد الخاص بمجمعكم:\n{الرابط}\n\nوزّع الرابط على المسمعين عند بدء جلسات السرد.\n\nمع التوفيق والتيسير 🤍';
+  document.getElementById('waTplEditor').value = def;
+  refreshPreview();
+}
+
+async function saveWaTemplate(){
+  var tpl = document.getElementById('waTplEditor').value.trim();
+  if(!tpl){ showToast('نص الرسالة فارغ','error'); return; }
+  var btn = document.getElementById('btnSaveTpl');
+  btn.disabled=true;
+  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+  try {
+    await db._upsert('platform_settings',{key:'wa_template', value: tpl});
+    _platformSettings.waTemplate = tpl;
+    showToast('تم حفظ الرسالة ✅','success');
+  } catch(e){
+    showToast('فشل الحفظ: '+e.message,'error');
+  }
+  btn.disabled=false;
+  btn.innerHTML='<i class="fab fa-whatsapp"></i> حفظ الرسالة';
+}
+
+function testWaTemplate(){
+  var myPhone = _platformSettings.adminPhone || '';
+  if(!myPhone){ showToast('أدخل رقمك في حقل "رقم واتساب الإرسال" أولاً','warning'); return; }
+  var phone = myPhone.replace(/\D/g,'');
+  if(phone.startsWith('0')) phone = '966'+phone.slice(1);
+  var tpl = document.getElementById('waTplEditor').value;
+  var msg = tpl
+    .replace(/\{اسم_المجمع\}/g,'مجمع تجريبي')
+    .replace(/\{مدير_المجمع\}/g,'مدير المجمع')
+    .replace(/\{الرابط\}/g,'https://sard.app/join/TEST123')
+    .replace(/\{المدينة\}/g,'الرياض')
+    .replace(/\{اسم_الدورة\}/g,'دورة تجريبية');
+  window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(msg),'_blank','noopener');
 }
 
 /* ============ TOAST ============ */
