@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>تقرير المجمع والمسارات</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap"/>
+  <style>
+    :root{
+      --primary:#014979;--primary-dk:#013560;--primary-lt:#e8f2fb;
+      --gold:#b19738;--gold-lt:#faf3e0;--success:#1a7a4a;
+      --danger:#c0392b;--warning:#d97706;--bg:#f4f6f9;
+      --card-bg:#ffffff;--text:#1e293b;--text-muted:#64748b;
+      --border:rgba(1,73,121,0.10);
+      --shadow-sm:0 2px 8px rgba(1,73,121,0.07);
+      --shadow-md:0 6px 24px rgba(1,73,121,0.10);
+      --shadow-lg:0 12px 40px rgba(1,73,121,0.14);
+      --radius:14px;--radius-sm:8px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+    .navbar-sard{background:var(--primary);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000;box-shadow:0 2px 16px rgba(0,0,0,0.18);}
+    .navbar-brand{color:#fff;font-size:1.15rem;font-weight:800;display:flex;align-items:center;gap:8px;}
+    .navbar-brand i{color:var(--gold);font-size:1.2rem;}
+    .nav-back{padding:6px 14px;border-radius:20px;border:none;background:rgba(255,255,255,0.12);color:rgba(255,255,255,.85);font-family:'Tajawal',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:background .2s;}
+    .nav-back:hover{background:rgba(255,255,255,0.22);}
+    .btn-nav{padding:7px 16px;border-radius:var(--radius-sm);border:none;background:rgba(255,255,255,0.15);color:#fff;font-family:'Tajawal',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .2s;}
+    .btn-nav:hover{background:rgba(255,255,255,0.25);}
+
+    .page-wrap{padding:20px;max-width:1140px;margin:auto;padding-bottom:40px;}
+    .card-sard{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:20px;margin-bottom:16px;}
+    .card-title{font-size:1rem;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+
+    .kpi-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:18px;position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s;}
+    .kpi-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+    .kpi-float{position:absolute;left:-10px;bottom:-10px;font-size:4.5rem;opacity:.07;pointer-events:none;transition:transform .3s,opacity .3s;}
+    .kpi-card:hover .kpi-float{transform:scale(1.15) rotate(-5deg);opacity:.12;}
+    .kpi-label{font-size:.78rem;color:var(--text-muted);font-weight:500;margin-bottom:4px;}
+    .kpi-value{font-size:1.85rem;font-weight:800;color:var(--primary);line-height:1.1;}
+    .kpi-value.green{color:var(--success);}.kpi-value.red{color:var(--danger);}.kpi-value.gold{color:var(--gold);}
+    .prog-bar{width:100%;height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:6px;}
+    .prog-fill{height:100%;border-radius:99px;transition:width .6s ease;}
+    .prog-green{background:linear-gradient(90deg,#10b981,#34d399);}
+    .prog-blue{background:linear-gradient(90deg,#3b82f6,#60a5fa);}
+    .prog-amber{background:linear-gradient(90deg,#f59e0b,#fbbf24);}
+    .prog-red{background:linear-gradient(90deg,#ef4444,#f87171);}
+
+    .badge-sard{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.78rem;font-weight:600;}
+    .badge-pass{background:#d1fae5;color:#065f46;}.badge-fail{background:#fee2e2;color:#991b1b;}
+    .badge-prim{background:var(--primary-lt);color:var(--primary);}.badge-gold{background:var(--gold-lt);color:#7c6620;}
+    .badge-warn{background:#fef3c7;color:#92400e;}.badge-info{background:#dbeafe;color:#1e40af;}
+
+    .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-weight:800;font-size:.8rem;}
+    .rk-1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff;box-shadow:0 3px 8px rgba(245,158,11,.4);}
+    .rk-2{background:linear-gradient(135deg,#94a3b8,#64748b);color:#fff;}
+    .rk-3{background:linear-gradient(135deg,#d97706,#b45309);color:#fff;}
+    .rk-n{background:#e2e8f0;color:#475569;}
+
+    .tbl-wrap{overflow-x:auto;border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);}
+    .sard-table{width:100%;border-collapse:collapse;font-size:.82rem;}
+    .sard-table thead th{background:var(--primary-lt);color:var(--primary);font-weight:700;padding:10px 12px;text-align:right;border-bottom:2px solid rgba(1,73,121,.15);white-space:nowrap;}
+    .sard-table tbody tr{background:#fff;transition:background .15s;}
+    .sard-table tbody tr:nth-child(even){background:#fafbfd;}
+    .sard-table tbody tr:hover{background:var(--primary-lt);}
+    .sard-table tbody tr.row-sel{background:var(--primary-lt);outline:2px solid var(--primary);outline-offset:-2px;}
+    .sard-table tbody td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+
+    .sard-select{appearance:none;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 32px 8px 12px;font-size:.9rem;font-weight:500;color:var(--primary);cursor:pointer;font-family:'Tajawal',sans-serif;background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23014979' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");background-position:left 8px center;background-repeat:no-repeat;background-size:1.2em;}
+    .sard-select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(1,73,121,.10);}
+
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+    .grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+    @media(max-width:900px){.grid-5{grid-template-columns:repeat(3,1fr);}.grid-4{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:640px){.grid-5,.grid-4,.grid-3{grid-template-columns:1fr 1fr;}.grid-2{grid-template-columns:1fr;}}
+
+    .spinner-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:16px;}
+    .spinner{width:44px;height:44px;border:4px solid var(--primary-lt);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    .d-flex{display:flex;}.align-center{align-items:center;}.justify-between{justify-content:space-between;}
+    .gap-2{gap:8px;}.gap-3{gap:12px;}.flex-wrap{flex-wrap:wrap;}
+    .fw-bold{font-weight:700;}.text-muted{color:var(--text-muted);font-size:.85rem;}
+    .mt-2{margin-top:8px;}.mt-3{margin-top:12px;}
+    .animate-in{animation:fadeUp .35s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+    .mini-tbl-wrap{overflow-x:auto;border-radius:var(--radius-sm);}
+    .mini-table{width:100%;border-collapse:collapse;font-size:.8rem;}
+    .mini-table th,.mini-table td{border:1px solid var(--border);padding:6px 9px;text-align:center;vertical-align:middle;white-space:nowrap;}
+    .mini-table thead th{background:var(--primary-lt);color:var(--primary);font-weight:700;}
+    .mini-table thead th.th-part{background:var(--primary);color:#fff;font-weight:800;}
+    .mini-table td.td-label{background:var(--primary-lt);color:var(--primary);font-weight:700;text-align:right;min-width:70px;}
+    .mini-table td.td-part{background:#f8fafc;font-weight:800;color:var(--primary-dk);text-align:center;}
+    .mini-table tbody tr:hover td{background:rgba(1,73,121,0.04);}
+    .mini-table tbody tr:hover td.td-label{background:var(--primary-lt);}
+    .cell-pass{color:var(--success);font-weight:800;}
+    .cell-fail{color:var(--danger);font-weight:800;}
+    .cell-empty{color:#d1d5db;}
+
+    .section-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .subtab-btn{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:.85rem;font-weight:700;color:var(--primary);transition:all .2s;}
+    .subtab-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+    .empty-box{padding:24px;text-align:center;color:var(--text-muted);}
+    .btn-excel-sard{background:linear-gradient(135deg,var(--primary),var(--primary-dk));color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 18px;font-family:'Tajawal',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;box-shadow:var(--shadow-sm);}
+    .btn-excel-sard:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);}
+    .btn-excel-sard i{color:var(--gold);}
+  </style>
+</head>
+<body>
+<nav class="navbar-sard">
+  <div class="navbar-brand"><i class="fas fa-route"></i><span>تقرير المجمع والمسارات</span></div>
+  <div class="d-flex align-center gap-2">
+    <button onclick="loadData()" class="btn-nav"><i class="fas fa-rotate"></i> تحديث</button>
+    <a href="../" class="nav-back"><i class="fas fa-arrow-right"></i> العودة</a>
+  </div>
+</nav>
+
+<div class="page-wrap" id="app">
+  <div class="spinner-wrap animate-in"><div class="spinner"></div><span class="text-muted">جاري تحميل التقرير...</span></div>
+</div>
+
+<script>
+const API="https://script.google.com/macros/s/AKfycbwhK6Xt_lWe4jGidKO4n-yT774a047rvxRhzX6fklakJM0_5QXEEmtWz-GpjPGw2ZAS/exec";
+
+async function apiGet(action, params){
+  var url=new URL(API);
+  url.searchParams.set('action',action);
+  if(params)Object.keys(params).forEach(function(k){
+    if(params[k]!==undefined && params[k]!==null) url.searchParams.set(k,String(params[k]));
+  });
+  url.searchParams.set('_ts', Date.now().toString());
+  var res=await fetch(url.toString(), { method:'GET', cache:'no-store' });
+  var data=await res.json();
+  if(!res.ok || (data && data.error)) throw new Error((data && data.error) || ('HTTP '+res.status));
+  return data;
+}
+function fN(v){return Number(v||0).toLocaleString('en-US');}
+function fP(v){return Number(v||0).toLocaleString('en-US',{maximumFractionDigits:1});}
+function escH(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);});}
+function rkCls(r){return r===1?'rk-1':r===2?'rk-2':r===3?'rk-3':'rk-n';}
+function pgCls(p){return p>=80?'prog-green':p>=60?'prog-blue':p>=40?'prog-amber':'prog-red';}
+
+function kpiCard(label,value,icon,colorCls,sub){
+  return '<div class="kpi-card animate-in">'
+    +'<div class="kpi-label">'+escH(label)+'</div>'
+    +'<div class="kpi-value '+(colorCls||'')+'">'+escH(String(value))+'</div>'
+    +(sub?'<div class="text-muted" style="margin-top:4px;font-size:.75rem;">'+sub+'</div>':'')
+    +'<i class="fas '+escH(icon)+' kpi-float"></i></div>';
+}
+function kpiCardBar(label,value,icon){
+  var pct=Math.min(Number(value)||0,100);
+  return '<div class="kpi-card animate-in">'
+    +'<div class="kpi-label">'+escH(label)+'</div>'
+    +'<div class="kpi-value">'+escH(fP(value))+'%</div>'
+    +'<div class="prog-bar"><div class="prog-fill '+pgCls(pct)+'" style="width:'+pct+'%"></div></div>'
+    +'<i class="fas '+escH(icon)+' kpi-float"></i></div>';
+}
+function setSpinner(id){document.getElementById(id).innerHTML='<div class="spinner-wrap animate-in"><div class="spinner"></div><span class="text-muted">جاري التحميل...</span></div>';}
+
+function buildMiniTable(sections,partsDivisions){
+  if(!sections||!sections.length)return '<p class="text-muted" style="padding:16px;text-align:center;">لا توجد مقاطع مسجَّلة</p>';
+  var div=Number(partsDivisions)||2;
+  var label=div===4?'الربع':div===1?'الجزء كامل':'الحزب';
+  var map={};
+  sections.forEach(function(s){
+    if(!s||!s.partNumber)return;
+    var pn=Number(s.partNumber);if(!pn||pn<1||pn>30)return;
+    var hz=div===1?1:Number(s.hizb||1);if(hz<1||hz>div)return;
+    if(!map[pn]){map[pn]={};for(var i=1;i<=div;i++)map[pn][i]=null;}
+    map[pn][hz]=s;
+  });
+  var parts=Object.keys(map).sort(function(a,b){return Number(a)-Number(b);});
+  if(!parts.length)return '<p class="text-muted" style="padding:16px;text-align:center;">لا توجد مقاطع مسجَّلة</p>';
+
+  var thead='<thead>';
+  if(div===1){
+    thead+='<tr>'
+      +'<th class="td-label">المسمّع</th>'
+      +'<th>الجزء</th>'
+      +'<th class="th-part">الأخطاء</th>'
+      +'<th class="th-part">التنبيهات</th>'
+      +'<th class="th-part">الدرجة</th>'
+      +'<th class="th-part">وجه الرسوب</th>'
+      +'</tr>';
+  } else {
+    thead+='<tr><th class="td-label" rowspan="2">المسمّع</th><th rowspan="2">الجزء</th>';
+    for(var i=1;i<=div;i++) thead+='<th colspan="4" class="th-part">'+escH(label)+' '+i+'</th>';
+    thead+='</tr><tr>';
+    for(var j=1;j<=div;j++) thead+='<th>خطأ</th><th>تنبيه</th><th>الدرجة</th><th>وجه</th>';
+    thead+='</tr>';
+  }
+  thead+='</thead>';
+
+  var tbody=parts.map(function(pn){
+    var hizbArr=[];for(var i=1;i<=div;i++)hizbArr.push(map[pn][i]);
+    var teachers=[];
+    hizbArr.forEach(function(h){if(h&&h.teacherName&&h.teacherName.trim())teachers.push(h.teacherName.trim());});
+    teachers=teachers.filter(function(v,i,a){return a.indexOf(v)===i;});
+    var tD=teachers.length?teachers.join(' / '):'—';
+
+    if(div===1){
+      var h=hizbArr[0];
+      if(!h)return '<tr><td class="td-label">'+escH(tD)+'</td><td class="td-part">'+pn+'</td><td class="cell-empty">—</td><td class="cell-empty">—</td><td class="cell-empty">—</td><td class="cell-empty">—</td></tr>';
+      var sc=Number(h.score);var scStr=isFinite(sc)?(Math.abs(sc-Math.round(sc))<1e-9?String(Math.round(sc)):String(Math.round(sc*10)/10)):'—';
+      return '<tr><td class="td-label">'+escH(tD)+'</td><td class="td-part">'+pn+'</td>'
+        +'<td>'+escH(String(h.mistakes||0))+'</td>'
+        +'<td>'+escH(String(h.warnings||0))+'</td>'
+        +'<td class="'+(h.isPassed?'cell-pass':'cell-fail')+'">'+scStr+'</td>'
+        +'<td style="font-size:.7rem;">'+((!h.isPassed)?escH(String(h.failFace||'')):'')+'</td></tr>';
+    }
+
+    var cells=hizbArr.map(function(h){
+      if(!h)return'<td class="cell-empty">—</td><td class="cell-empty">—</td><td class="cell-empty">—</td><td class="cell-empty">—</td>';
+      var sc=Number(h.score);var scStr=isFinite(sc)?(Math.abs(sc-Math.round(sc))<1e-9?String(Math.round(sc)):String(Math.round(sc*10)/10)):'—';
+      return '<td>'+escH(String(h.mistakes||0))+'</td>'
+        +'<td>'+escH(String(h.warnings||0))+'</td>'
+        +'<td class="'+(h.isPassed?'cell-pass':'cell-fail')+'">'+scStr+'</td>'
+        +'<td style="font-size:.7rem;">'+((!h.isPassed)?escH(String(h.failFace||'')):'')+'</td>';
+    }).join('');
+    return '<tr><td class="td-label">'+escH(tD)+'</td><td class="td-part">'+pn+'</td>'+cells+'</tr>';
+  }).join('');
+
+  return '<div class="mini-tbl-wrap"><table class="mini-table">'+thead+'<tbody>'+tbody+'</tbody></table></div>';
+}
+
+function statusLabel(status){
+  return status==='present'?'حاضر':status==='late'?'متأخر':status==='excused'?'معتذر':status==='absent'?'غائب':'—';
+}
+function statusBadgeClass(status){
+  return status==='present'?'badge-pass':status==='late'?'badge-warn':status==='excused'?'badge-info':status==='absent'?'badge-fail':'badge-prim';
+}
+function exportTableToExcel(filename, headers, rows){
+  var table = '<table><thead><tr>' + headers.map(function(h){return '<th>'+escH(h)+'</th>';}).join('') + '</tr></thead><tbody>'
+    + rows.map(function(row){
+      return '<tr>' + row.map(function(cell){return '<td>'+escH(cell==null?'':String(cell))+'</td>';}).join('') + '</tr>';
+    }).join('')
+    + '</tbody></table>';
+  var html = '<html><head><meta charset="UTF-8"></head><body>' + table + '</body></html>';
+  var blob = new Blob(['\ufeff', html], {type:'application/vnd.ms-excel;charset=utf-8;'});
+  var link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(function(){ URL.revokeObjectURL(link.href); }, 1000);
+}
+
+function buildAllStudentRows(selectedOnly){
+  if(!_data) return [];
+  var rows = [];
+  var tracks = _data.tracks || [];
+  var selectedName = _sel || '';
+  tracks.forEach(function(t){
+    if(selectedOnly && t.name !== selectedName) return;
+    var students = (_data.studentsByTrack && _data.studentsByTrack[t.name]) ? _data.studentsByTrack[t.name] : [];
+    students.forEach(function(st, idx){
+      rows.push([
+        t.name || '',
+        idx + 1,
+        st.name || '',
+        statusLabel(st.status),
+        st.expectedParts || 0,
+        st.displayedParts || 0,
+        st.passedParts || 0,
+        fP(st.coveragePercent || 0) + '%',
+        fP(st.passFromExpectedPercent || 0) + '%',
+        st.failedParts || 0,
+        fP(st.failPercent || 0) + '%',
+        fP(st.studentPercent || 0) + '%',
+        st.rank || '',
+        st.halaqa || ''
+      ]);
+    });
+  });
+  return rows;
+}
+function exportDetailedStudents(selectedOnly){
+  var rows = buildAllStudentRows(!!selectedOnly);
+  if(!rows.length){ alert('لا توجد بيانات للتصدير'); return; }
+  var headers = ['المسار','#','اسم الطالب','الحضور','المفترض','المعروضة','المجتازة','نسبة العرض','نسبة الاجتياز','الرسوب','نسبة الرسوب','نسبة الطالب','الترتيب','الحلقة'];
+  var suffix = selectedOnly ? (_sel || 'المسار') : 'كل-الطلاب';
+  exportTableToExcel('تقرير-المسار-التفصيلي-' + suffix + '.xls', headers, rows);
+}
+function getSpecialFilterOptions(){
+  var tracks = (_data && _data.tracks) ? _data.tracks : [];
+  var opts = ['<option value="__all__"'+(_specialFilter==='__all__'?' selected':'')+'>كل المسارات</option>'];
+  tracks.forEach(function(t){
+    var name = t && t.name ? t.name : '';
+    opts.push('<option value="'+escH(name)+'"'+(_specialFilter===name?' selected':'')+'>'+escH(name)+'</option>');
+  });
+  return opts.join('');
+}
+function getSpecialFilteredStudents(){
+  if(!_data || !_data.studentsByTrack) return [];
+  var rows = [];
+  if(_specialFilter === '__all__'){
+    Object.keys(_data.studentsByTrack).forEach(function(tName){
+      (_data.studentsByTrack[tName] || []).forEach(function(st){
+        rows.push(Object.assign({track:tName}, st));
+      });
+    });
+  } else {
+    (_data.studentsByTrack[_specialFilter] || []).forEach(function(st){
+      rows.push(Object.assign({track:_specialFilter}, st));
+    });
+  }
+  return rows;
+}
+function buildAbsentRows(selectedStudents){
+  return (selectedStudents || []).filter(function(st){ return st.status === 'absent'; }).map(function(st, idx){
+    return {
+      idx: idx + 1,
+      track: st.track || '',
+      halaqa: st.halaqa || '',
+      name: st.name || '',
+      status: statusLabel(st.status),
+      expectedParts: st.expectedParts || 0,
+      displayedParts: st.displayedParts || 0,
+      remainingParts: st.remainingParts || 0,
+      studentPercent: fP(st.studentPercent || 0) + '%'
+    };
+  });
+}
+function buildRemainingRows(selectedStudents){
+  return (selectedStudents || []).filter(function(st){ return Number(st.remainingParts || 0) > 0; }).map(function(st, idx){
+    return {
+      idx: idx + 1,
+      track: st.track || '',
+      halaqa: st.halaqa || '',
+      name: st.name || '',
+      status: statusLabel(st.status),
+      expectedParts: st.expectedParts || 0,
+      displayedParts: st.displayedParts || 0,
+      remainingParts: st.remainingParts || 0,
+      passPercent: fP(st.passFromExpectedPercent || 0) + '%',
+      studentPercent: fP(st.studentPercent || 0) + '%'
+    };
+  });
+}
+function exportSpecialTab(tabName){
+  var students = getSpecialFilteredStudents();
+  var rows = [];
+  var headers = [];
+  var filterLabel = _specialFilter === '__all__' ? 'كل-المسارات' : _specialFilter;
+  var filename = '';
+  if(tabName === 'absent'){
+    var absentRows = buildAbsentRows(students);
+    rows = absentRows.map(function(r){ return [r.track, r.idx, r.name, r.status, r.expectedParts, r.displayedParts, r.remainingParts, r.studentPercent, r.halaqa]; });
+    headers = ['المسار','#','اسم الطالب','الحالة','المفترض','المعروضة','المتبقي','نسبة الطالب','الحلقة'];
+    filename = 'الطلاب-الغائبون-' + filterLabel + '.xls';
+  } else {
+    var remainingRows = buildRemainingRows(students);
+    rows = remainingRows.map(function(r){ return [r.track, r.idx, r.name, r.status, r.expectedParts, r.displayedParts, r.remainingParts, r.passPercent, r.studentPercent, r.halaqa]; });
+    headers = ['المسار','#','اسم الطالب','الحالة','المفترض','المعروضة','المتبقي','نسبة الاجتياز','نسبة الطالب','الحلقة'];
+    filename = 'الطلاب-المتبقي-عليهم-عرض-' + filterLabel + '.xls';
+  }
+  if(!rows.length){ alert('لا توجد بيانات للتصدير'); return; }
+  exportTableToExcel(filename, headers, rows);
+}
+function buildSpecialTabsHtml(){
+  var specialStudents = getSpecialFilteredStudents();
+  var absentRows = buildAbsentRows(specialStudents);
+  var remainingRows = buildRemainingRows(specialStudents);
+
+  function makeRows(rows, type){
+    if(!rows.length) return '<tr><td colspan="' + (type==='absent' ? 9 : 10) + '" class="empty-box">لا توجد بيانات في هذا التبويب</td></tr>';
+    return rows.map(function(r){
+      if(type === 'absent'){
+        return '<tr><td>'+r.idx+'</td><td><b>'+escH(r.name)+'</b></td><td>'+escH(r.status)+'</td><td>'+escH(String(r.expectedParts))+'</td><td>'+escH(String(r.displayedParts))+'</td><td>'+escH(String(r.remainingParts))+'</td><td>'+escH(r.studentPercent)+'</td><td>'+escH(r.track)+'</td><td>'+escH(r.halaqa)+'</td></tr>';
+      }
+      return '<tr><td>'+r.idx+'</td><td><b>'+escH(r.name)+'</b></td><td>'+escH(r.status)+'</td><td>'+escH(String(r.expectedParts))+'</td><td>'+escH(String(r.displayedParts))+'</td><td>'+escH(String(r.remainingParts))+'</td><td>'+escH(r.passPercent)+'</td><td>'+escH(r.studentPercent)+'</td><td>'+escH(r.track)+'</td><td>'+escH(r.halaqa)+'</td></tr>';
+    }).join('');
+  }
+
+  var exportBtnHtml = '<button class="btn-excel-sard" onclick="exportSpecialTab(_specialTab)"><i class="fas fa-file-export"></i> تصدير</button>';
+
+  return ''
+    + '<div class="card-sard animate-in">'
+    +   '<div class="d-flex justify-between align-center flex-wrap gap-2" style="margin-bottom:14px;">'
+    +     '<div class="card-title" style="margin-bottom:0;"><i class="fas fa-users-viewfinder" style="color:var(--gold);"></i>قوائم المتابعة</div>'
+    +     '<div class="section-tools">'
+    +       '<span class="text-muted fw-bold" style="font-size:.85rem;">فلترة:</span>'
+    +       '<select class="sard-select" id="specialFilterSel" onchange="setSpecialFilter(this.value)">'+getSpecialFilterOptions()+'</select>'
+    +       '<button class="subtab-btn '+(_specialTab==='absent'?'active':'')+'" id="subtab-btn-absent" onclick="setSpecialTab(\'absent\')">الطلاب الغائبون ('+absentRows.length+')</button>'
+    +       '<button class="subtab-btn '+(_specialTab==='remaining'?'active':'')+'" id="subtab-btn-remaining" onclick="setSpecialTab(\'remaining\')">المتبقي عليهم عرض ('+remainingRows.length+')</button>'
+    +       exportBtnHtml
+    +     '</div>'
+    +   '</div>'
+    +   '<div id="special-tab-absent"'+(_specialTab==='absent'?'':' style="display:none;"')+'>'
+    +     '<div class="tbl-wrap"><table class="sard-table">'
+    +       '<thead><tr><th>#</th><th>اسم الطالب</th><th>الحالة</th><th>المفترض</th><th>المعروضة</th><th>المتبقي</th><th>نسبة الطالب</th><th>المسار</th><th>الحلقة</th></tr></thead>'
+    +       '<tbody>' + makeRows(absentRows, 'absent') + '</tbody>'
+    +     '</table></div>'
+    +   '</div>'
+    +   '<div id="special-tab-remaining"'+(_specialTab==='remaining'?'':' style="display:none;"')+'>'
+    +     '<div class="tbl-wrap"><table class="sard-table">'
+    +       '<thead><tr><th>#</th><th>اسم الطالب</th><th>الحالة</th><th>المفترض</th><th>المعروضة</th><th>المتبقي</th><th>نسبة الاجتياز</th><th>نسبة الطالب</th><th>المسار</th><th>الحلقة</th></tr></thead>'
+    +       '<tbody>' + makeRows(remainingRows, 'remaining') + '</tbody>'
+    +     '</table></div>'
+    +   '</div>'
+    + '</div>';
+}
+
+var _data=null, _sel='', _specialFilter='__all__', _specialTab='absent';
+
+function setSpecialTab(tabName){
+  _specialTab = (tabName === 'remaining') ? 'remaining' : 'absent';
+  var absent = document.getElementById('special-tab-absent');
+  var remaining = document.getElementById('special-tab-remaining');
+  var btnA = document.getElementById('subtab-btn-absent');
+  var btnR = document.getElementById('subtab-btn-remaining');
+  if(absent) absent.style.display = _specialTab === 'absent' ? '' : 'none';
+  if(remaining) remaining.style.display = _specialTab === 'remaining' ? '' : 'none';
+  if(btnA) btnA.classList.toggle('active', _specialTab === 'absent');
+  if(btnR) btnR.classList.toggle('active', _specialTab === 'remaining');
+}
+function setSpecialFilter(value){
+  _specialFilter = value || '__all__';
+  render();
+  setTimeout(function(){
+    var el = document.getElementById('specialFilterSel');
+    if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 50);
+}
+
+function loadData(){
+  setSpinner('app');
+  Promise.all([
+    apiGet('getDailySummary'),
+    apiGet('getStudents')
+  ]).then(function(res){
+    var summary = res[0] || {};
+    var studentsData = res[1] || {};
+    _data = transformToTracks(summary, studentsData.students || []);
+    render();
+  }).catch(function(e){
+    document.getElementById('app').innerHTML='<div class="card-sard" style="text-align:center;padding:32px;color:var(--danger);"><i class="fas fa-exclamation-circle" style="font-size:2rem;margin-bottom:8px;display:block;"></i>خطأ: '+escH(e.message||String(e))+'</div>';
+  });
+}
+
+function transformToTracks(raw, studentsMaster){
+  var studentsByHalaqa = raw.studentsByHalaqa || {};
+  var masterById = {};
+  var trackMap = {};
+  var attendanceAgg = {};
+
+  (studentsMaster || []).forEach(function(st){
+    if(st && st.id) masterById[String(st.id)] = st;
+  });
+
+  Object.keys(studentsByHalaqa).forEach(function(halaqaName){
+    (studentsByHalaqa[halaqaName] || []).forEach(function(st){
+      var master = masterById[String(st.id)] || null;
+      var trackName = String(
+        (st && st.track) ||
+        (master && master.track) ||
+        ''
+      ).trim() || 'بدون مسار';
+
+      var copy = Object.assign({}, st, {
+        halaqa: st.halaqa || halaqaName,
+        track: trackName
+      });
+
+      if(!trackMap[trackName]) trackMap[trackName] = [];
+      trackMap[trackName].push(copy);
+
+      if(!attendanceAgg[trackName]){
+        attendanceAgg[trackName] = {present:0,late:0,excused:0,absent:0};
+      }
+
+      if(copy.status === 'present') attendanceAgg[trackName].present++;
+      else if(copy.status === 'late') attendanceAgg[trackName].late++;
+      else if(copy.status === 'excused') attendanceAgg[trackName].excused++;
+      else if(copy.status === 'absent') attendanceAgg[trackName].absent++;
+    });
+  });
+
+  var tracks = Object.keys(trackMap).sort(function(a,b){
+    return a.localeCompare(b,'ar');
+  }).map(function(trackName){
+    var students = trackMap[trackName] || [];
+
+    students.sort(function(a,b){
+      return Number(b.studentPercent||0) - Number(a.studentPercent||0);
+    });
+    students.forEach(function(st, i){
+      st.rank = i + 1;
+    });
+
+    var item = {
+      name: trackName,
+      present: attendanceAgg[trackName] ? attendanceAgg[trackName].present : 0,
+      late: attendanceAgg[trackName] ? attendanceAgg[trackName].late : 0,
+      excused: attendanceAgg[trackName] ? attendanceAgg[trackName].excused : 0,
+      absent: attendanceAgg[trackName] ? attendanceAgg[trackName].absent : 0,
+      expectedParts: 0,
+      displayedParts: 0,
+      passedParts: 0,
+      failedParts: 0,
+      remainingParts: 0,
+      coveragePercent: 0,
+      failPercent: 0,
+      globalPercent: 0
+    };
+
+    students.forEach(function(st){
+      item.expectedParts += Number(st.expectedParts || 0);
+      item.displayedParts += Number(st.displayedParts || 0);
+      item.passedParts += Number(st.passedParts || 0);
+      item.failedParts += Number(st.failedParts || 0);
+      item.remainingParts += Number(st.remainingParts || 0);
+    });
+
+    item.coveragePercent = item.expectedParts > 0 ? (item.displayedParts / item.expectedParts) * 100 : 0;
+    item.failPercent = item.expectedParts > 0 ? (item.failedParts / item.expectedParts) * 100 : 0;
+    item.globalPercent = item.expectedParts > 0 ? (item.passedParts / item.expectedParts) * 100 : 0;
+
+    return item;
+  });
+
+  tracks.sort(function(a,b){
+    return Number(b.globalPercent||0) - Number(a.globalPercent||0);
+  });
+  tracks.forEach(function(t, i){
+    t.rank = i + 1;
+  });
+
+  var center = {
+    trackCount: tracks.length,
+    present: 0,
+    late: 0,
+    excused: 0,
+    absent: 0,
+    expectedParts: 0,
+    displayedParts: 0,
+    passedParts: 0,
+    failedParts: 0,
+    remainingParts: 0,
+    coveragePercent: 0,
+    globalPercent: 0
+  };
+
+  tracks.forEach(function(t){
+    center.present += Number(t.present||0);
+    center.late += Number(t.late||0);
+    center.excused += Number(t.excused||0);
+    center.absent += Number(t.absent||0);
+    center.expectedParts += Number(t.expectedParts||0);
+    center.displayedParts += Number(t.displayedParts||0);
+    center.passedParts += Number(t.passedParts||0);
+    center.failedParts += Number(t.failedParts||0);
+    center.remainingParts += Number(t.remainingParts||0);
+  });
+
+  center.coveragePercent = center.expectedParts > 0 ? (center.displayedParts / center.expectedParts) * 100 : 0;
+  center.globalPercent = center.expectedParts > 0 ? (center.passedParts / center.expectedParts) * 100 : 0;
+
+  return {
+    center: center,
+    tracks: tracks,
+    studentsByTrack: trackMap,
+    raw: raw
+  };
+}
+
+function render(){
+  if(!_data)return;
+
+  var center=_data.center||{};
+  var tracks=_data.tracks||[];
+  if(!_sel&&tracks.length)_sel=tracks[0].name;
+  var students=(_data.studentsByTrack&&_sel)?(_data.studentsByTrack[_sel]||[]):[];
+
+  var trackRows=tracks.map(function(t,i){
+    var isSel=_sel===t.name;
+    var tn=t.name.replace(/'/g,"&#39;");
+    return '<tr onclick="selTrack(\''+tn+'\')" style="cursor:pointer;" class="'+(isSel?'row-sel':'')+'">'
+      +'<td class="text-muted">'+(i+1)+'</td>'
+      +'<td><b>'+escH(t.name)+'</b>'+(isSel?'<span class="badge-sard badge-prim" style="margin-right:6px;font-size:.7rem;">مُختار</span>':'')+'</td>'
+      +'<td><span class="badge-sard badge-pass">'+fN(t.present)+'</span></td>'
+      +'<td><span class="badge-sard badge-warn">'+fN(t.late)+'</span></td>'
+      +'<td><span class="badge-sard badge-info">'+fN(t.excused)+'</span></td>'
+      +'<td><span class="badge-sard badge-fail">'+fN(t.absent)+'</span></td>'
+      +'<td>'+fN(t.expectedParts)+'</td><td>'+fN(t.displayedParts)+'</td>'
+      +'<td style="color:var(--success);font-weight:700;">'+fN(t.passedParts)+'</td>'
+      +'<td>'+fP(t.coveragePercent)+'%</td>'
+      +'<td style="color:var(--warning);">'+fN(t.remainingParts)+'</td>'
+      +'<td style="color:var(--danger);">'+fN(t.failedParts)+'</td>'
+      +'<td style="color:var(--danger);">'+fP(t.failPercent)+'%</td>'
+      +'<td style="color:var(--primary);font-weight:800;">'+fP(t.globalPercent)+'%</td>'
+      +'<td><span class="rank-badge '+rkCls(t.rank)+'">'+t.rank+'</span></td>'
+      +'</tr>';
+  }).join('');
+
+  var trackOpts=tracks.map(function(t){
+    return '<option value="'+escH(t.name)+'"'+(_sel===t.name?' selected':'')+'>'+escH(t.name)+'</option>';
+  }).join('');
+
+  var studentRows=students.length===0
+    ?'<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text-muted);">لا توجد بيانات لهذا المسار</td></tr>'
+    :students.map(function(st,i){
+      var sL=st.status==='present'?'حاضر':st.status==='late'?'متأخر':st.status==='excused'?'معتذر':st.status==='absent'?'غائب':'—';
+      var sC=st.status==='present'?'badge-pass':st.status==='late'?'badge-warn':st.status==='excused'?'badge-info':st.status==='absent'?'badge-fail':'badge-prim';
+      return '<tr>'
+        +'<td class="text-muted">'+(i+1)+'</td>'
+        +'<td><b>'+escH(st.name)+'</b></td>'
+        +'<td><span class="badge-sard '+sC+'">'+sL+'</span></td>'
+        +'<td>'+fN(st.expectedParts||0)+'</td><td>'+fN(st.displayedParts||0)+'</td>'
+        +'<td style="color:var(--success);font-weight:700;">'+fN(st.passedParts||0)+'</td>'
+        +'<td>'+fP(st.coveragePercent||0)+'%</td>'
+        +'<td style="color:#1d4ed8;">'+fP(st.passFromExpectedPercent||0)+'%</td>'
+        +'<td style="color:var(--danger);">'+fN(st.failedParts||0)+'</td>'
+        +'<td style="color:var(--danger);">'+fP(st.failPercent||0)+'%</td>'
+        +'<td style="color:var(--success);font-weight:800;">'+fP(st.studentPercent||0)+'%</td>'
+        +'<td><span class="rank-badge '+rkCls(st.rank)+'">'+st.rank+'</span></td>'
+        +'<td>'+escH(st.halaqa||'—')+'</td>'
+        +'</tr>';
+    }).join('');
+
+  var app=document.getElementById('app');
+  app.innerHTML=
+    '<div class="card-sard animate-in">'
+    +'<div class="card-title"><i class="fas fa-building-columns" style="color:var(--gold);"></i> تقرير المجمع العام</div>'
+    +'<div class="grid-3" style="margin-bottom:12px;">'
+    +kpiCard('عدد المسارات',fN(center.trackCount),'fa-route')
+    +kpiCard('حاضر / متأخر',fN(center.present)+' / '+fN(center.late),'fa-users')
+    +kpiCard('الغياب / الاعتذار',fN(center.absent)+' / '+fN(center.excused),'fa-user-clock')
+    +'</div>'
+    +'<div class="grid-3" style="margin-bottom:12px;">'
+    +kpiCard('الأجزاء المفترضة',fN(center.expectedParts),'fa-list-ol')
+    +kpiCard('الأجزاء المعروضة',fN(center.displayedParts),'fa-book-open')
+    +kpiCard('الأجزاء المجتازة',fN(center.passedParts),'fa-check-circle','green')
+    +'</div>'
+    +'<div class="grid-4">'
+    +kpiCard('أجزاء الرسوب',fN(center.failedParts),'fa-times-circle','red')
+    +kpiCard('الأجزاء المتبقية',fN(center.remainingParts),'fa-hourglass-half','gold')
+    +kpiCardBar('نسبة العرض',center.coveragePercent,'fa-chart-line')
+    +kpiCardBar('نسبة الاجتياز',center.globalPercent,'fa-trophy')
+    +'</div></div>'
+
+    +'<div class="card-sard animate-in">'
+    +'<div class="card-title"><i class="fas fa-table-list" style="color:var(--gold);"></i> تقرير المسارات</div>'
+    +'<div class="tbl-wrap"><table class="sard-table">'
+    +'<thead><tr><th>#</th><th>اسم المسار</th><th>حاضر</th><th>متأخر</th><th>معتذر</th><th>غائب</th>'
+    +'<th>المفترض</th><th>المعروضة</th><th>المجتازة</th><th>نسبة العرض</th>'
+    +'<th>المتبقية</th><th>الرسوب</th><th>نسبة الرسوب</th><th>النسبة العامة</th><th>الترتيب</th></tr></thead>'
+    +'<tbody>'+trackRows+'</tbody></table></div></div>'
+
+    +'<div class="card-sard animate-in">'
+    +'<div class="d-flex justify-between align-center flex-wrap gap-2" style="margin-bottom:16px;">'
+    +'<div class="card-title" style="margin-bottom:0;"><i class="fas fa-user-graduate" style="color:var(--gold);"></i> تقرير المسار التفصيلي</div>'
+    +'<div class="section-tools">'
+    +'<span class="text-muted fw-bold" style="font-size:.85rem;">اختر المسار:</span>'
+    +'<select class="sard-select" id="tSel" onchange="selTrack(this.value)">'+trackOpts+'</select>'
+    +'<button class="btn-excel-sard" onclick="exportDetailedStudents(true)"><i class="fas fa-file-export"></i> تصدير المسار المحدد</button>'
+    +'<button class="btn-excel-sard" onclick="exportDetailedStudents(false)"><i class="fas fa-file-export"></i> تصدير كل الطلاب</button>'
+    +'</div></div>'
+    +'<div class="tbl-wrap"><table class="sard-table">'
+    +'<thead><tr><th>#</th><th>اسم الطالب</th><th>الحضور</th><th>المفترض</th><th>المعروضة</th>'
+    +'<th>المجتازة</th><th>نسبة العرض</th><th>نسبة الاجتياز</th><th>الرسوب</th><th>نسبة الرسوب</th><th>نسبة الطالب</th><th>الترتيب</th><th>الحلقة</th></tr></thead>'
+    +'<tbody>'+studentRows+'</tbody></table></div></div>'
+    +buildSpecialTabsHtml();
+}
+
+function selTrack(name){
+  _sel=name;render();
+  setTimeout(function(){var e=document.getElementById('tSel');if(e)e.scrollIntoView({behavior:'smooth',block:'center'});},80);
+}
+
+loadData();
+</script>
+</body>
+</html>

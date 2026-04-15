@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>تقرير المسارات التفصيلي</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap"/>
+  <style>
+    :root{
+      --primary:#014979;--primary-dk:#013560;--primary-lt:#e8f2fb;
+      --gold:#b19738;--gold-lt:#faf3e0;--success:#1a7a4a;
+      --danger:#c0392b;--warning:#d97706;--bg:#f4f6f9;
+      --card-bg:#ffffff;--text:#1e293b;--text-muted:#64748b;
+      --border:rgba(1,73,121,0.10);
+      --shadow-sm:0 2px 8px rgba(1,73,121,0.07);
+      --shadow-md:0 6px 24px rgba(1,73,121,0.10);
+      --shadow-lg:0 12px 40px rgba(1,73,121,0.14);
+      --radius:14px;--radius-sm:8px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+    .navbar-sard{background:var(--primary);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000;box-shadow:0 2px 16px rgba(0,0,0,0.18);}
+    .navbar-brand{color:#fff;font-size:1.15rem;font-weight:800;display:flex;align-items:center;gap:8px;}
+    .navbar-brand i{color:var(--gold);font-size:1.2rem;}
+    .nav-back{padding:6px 14px;border-radius:20px;border:none;background:rgba(255,255,255,0.12);color:rgba(255,255,255,.85);font-family:'Tajawal',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:background .2s;}
+    .nav-back:hover{background:rgba(255,255,255,0.22);}
+    .btn-nav{padding:7px 16px;border-radius:var(--radius-sm);border:none;background:rgba(255,255,255,0.15);color:#fff;font-family:'Tajawal',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .2s;}
+    .btn-nav:hover{background:rgba(255,255,255,0.25);}
+
+    .page-wrap{padding:20px;max-width:1100px;margin:auto;padding-bottom:40px;}
+    .card-sard{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:20px;margin-bottom:16px;}
+    .card-title{font-size:1rem;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+
+    .kpi-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:18px;position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s;}
+    .kpi-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+    .kpi-float{position:absolute;left:-10px;bottom:-10px;font-size:4.5rem;opacity:.07;pointer-events:none;transition:transform .3s,opacity .3s;}
+    .kpi-card:hover .kpi-float{transform:scale(1.15) rotate(-5deg);opacity:.12;}
+    .kpi-label{font-size:.78rem;color:var(--text-muted);font-weight:500;margin-bottom:4px;}
+    .kpi-value{font-size:1.85rem;font-weight:800;color:var(--primary);line-height:1.1;}
+    .kpi-value.green{color:var(--success);}.kpi-value.red{color:var(--danger);}.kpi-value.gold{color:var(--gold);}
+    .prog-bar{width:100%;height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:6px;}
+    .prog-fill{height:100%;border-radius:99px;transition:width .6s ease;}
+    .prog-green{background:linear-gradient(90deg,#10b981,#34d399);}
+    .prog-blue{background:linear-gradient(90deg,#3b82f6,#60a5fa);}
+    .prog-amber{background:linear-gradient(90deg,#f59e0b,#fbbf24);}
+    .prog-red{background:linear-gradient(90deg,#ef4444,#f87171);}
+
+    .badge-sard{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.78rem;font-weight:600;}
+    .badge-pass{background:#d1fae5;color:#065f46;}.badge-fail{background:#fee2e2;color:#991b1b;}
+    .badge-prim{background:var(--primary-lt);color:var(--primary);}.badge-gold{background:var(--gold-lt);color:#7c6620;}
+
+    .sel-chip{padding:8px 16px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:#fff;cursor:pointer;transition:all .2s;font-family:'Tajawal',sans-serif;font-size:.88rem;color:var(--text);}
+    .sel-chip:hover{border-color:var(--primary);background:var(--primary-lt);}
+    .sel-chip.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:var(--shadow-sm);}
+
+    .btn-primary-sard{background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 20px;font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:background .2s,transform .15s;display:inline-flex;align-items:center;gap:7px;}
+    .btn-primary-sard:hover{background:var(--primary-dk);transform:translateY(-1px);}
+    .btn-outline-sard{background:transparent;color:var(--primary);border:1.5px solid var(--primary);border-radius:var(--radius-sm);padding:8px 18px;font-family:'Tajawal',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+    .btn-outline-sard:hover{background:var(--primary);color:#fff;}
+
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+    @media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:640px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr 1fr;}}
+
+    .spinner-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:16px;}
+    .spinner{width:44px;height:44px;border:4px solid var(--primary-lt);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    .d-flex{display:flex;}.align-center{align-items:center;}.justify-between{justify-content:space-between;}
+    .gap-2{gap:8px;}.gap-3{gap:12px;}.flex-wrap{flex-wrap:wrap;}
+    .fw-bold{font-weight:700;}.text-muted{color:var(--text-muted);font-size:.85rem;}
+    .mt-2{margin-top:8px;}.mt-3{margin-top:12px;}.mt-4{margin-top:16px;}
+    .animate-in{animation:fadeUp .35s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+    .mini-tbl-wrap{overflow-x:auto;border-radius:var(--radius-sm);}
+    .mini-table{width:100%;border-collapse:collapse;font-size:.8rem;}
+    .mini-table th,.mini-table td{border:1px solid var(--border);padding:6px 9px;text-align:center;vertical-align:middle;white-space:nowrap;}
+    .mini-table thead th{background:var(--primary-lt);color:var(--primary);font-weight:700;}
+    .mini-table thead th.th-part{background:var(--primary);color:#fff;font-weight:800;}
+    .mini-table td.td-label{background:var(--primary-lt);color:var(--primary);font-weight:700;text-align:right;min-width:70px;}
+    .mini-table td.td-part{background:#f8fafc;font-weight:800;color:var(--primary-dk);text-align:center;}
+    .mini-table tbody tr:hover td{background:rgba(1,73,121,0.04);}
+    .mini-table tbody tr:hover td.td-label{background:var(--primary-lt);}
+    .cell-pass{color:var(--success);font-weight:800;}
+    .cell-fail{color:var(--danger);font-weight:800;}
+    .cell-empty{color:#d1d5db;}
+
+    .info-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:.9rem;}
+    .info-row:last-child{border-bottom:none;}
+    .info-label{color:var(--text-muted);min-width:130px;font-size:.82rem;}
+    .info-val{font-weight:600;color:var(--text);}
+
+    .stat-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+    .stat-label{font-size:.78rem;color:var(--text-muted);min-width:100px;text-align:right;}
+    .stat-bar-wrap{flex:1;height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden;}
+    .stat-fill{height:100%;border-radius:99px;transition:width .6s ease;}
+    .stat-val{font-size:.82rem;font-weight:700;min-width:40px;text-align:left;}
+
+    .student-summary-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px;margin-bottom:16px;align-items:start;}
+    .student-kpis-grid-top,.student-kpis-grid-bottom{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+    .student-kpis-grid-top{margin-bottom:12px;}
+    @media(max-width:640px){
+      .student-summary-layout{grid-template-columns:1fr;}
+      .student-kpis-grid-top,.student-kpis-grid-bottom{grid-template-columns:repeat(2,minmax(0,1fr));}
+      #refreshHint{display:none !important;}
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar-sard">
+  <div class="navbar-brand">
+    <i class="fas fa-route"></i>
+    <span>تقرير المسارات التفصيلي</span>
+  </div>
+  <div class="d-flex align-center gap-2 flex-wrap">
+    <span id="refreshHint" style="font-size:.78rem;color:rgba(255,255,255,.85);display:inline-flex;align-items:center;gap:6px;">
+      <i class="fas fa-arrows-rotate"></i><span id="refreshText">تحديث تلقائي بالخلفية</span>
+    </span>
+    <button onclick="loadData({background:true,manual:true})" class="btn-nav"><i class="fas fa-rotate"></i> تحديث</button>
+    <a href="../" class="nav-back"><i class="fas fa-arrow-right"></i> العودة</a>
+  </div>
+</nav>
+
+<div class="page-wrap" id="app">
+  <div class="spinner-wrap animate-in">
+    <div class="spinner"></div>
+    <span class="text-muted">جاري تحميل البيانات...</span>
+  </div>
+</div>
+
+<script>
+const API = new URLSearchParams(location.search).get('api')
+  || localStorage.getItem('sard_api_url')
+  || "https://script.google.com/macros/s/AKfycbwhK6Xt_lWe4jGidKO4n-yT774a047rvxRhzX6fklakJM0_5QXEEmtWz-GpjPGw2ZAS/exec";
+
+async function apiGet(action, params){
+  var url=new URL(API);
+  url.searchParams.set('action',action);
+  if(params)Object.keys(params).forEach(function(k){
+    if(params[k]!==undefined && params[k]!==null) url.searchParams.set(k,String(params[k]));
+  });
+  url.searchParams.set('_ts', Date.now().toString());
+  var res=await fetch(url.toString(), { method:'GET', cache:'no-store' });
+  var data=await res.json();
+  if(!res.ok || (data && data.error)) throw new Error((data && data.error) || ('HTTP '+res.status));
+  return data;
+}
+
+function fN(v){return Number(v||0).toLocaleString('en-US');}
+function fP(v){return Number(v||0).toLocaleString('en-US',{maximumFractionDigits:1});}
+function escH(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);});}
+function pgCls(p){return p>=80?'prog-green':p>=60?'prog-blue':p>=40?'prog-amber':'prog-red';}
+function fillCls(p){return p>=80?'#10b981':p>=60?'#3b82f6':p>=40?'#f59e0b':'#ef4444';}
+
+function kpiCard(label,value,icon,colorCls,sub){
+  return '<div class="kpi-card animate-in">'
+    +'<div class="kpi-label">'+escH(label)+'</div>'
+    +'<div class="kpi-value '+(colorCls||'')+'">'+escH(String(value))+'</div>'
+    +(sub?'<div class="text-muted" style="margin-top:4px;font-size:.75rem;">'+sub+'</div>':'')
+    +'<i class="fas '+escH(icon)+' kpi-float"></i></div>';
+}
+function kpiCardBar(label,value,icon){
+  var pct=Math.min(Number(value)||0,100);
+  return '<div class="kpi-card animate-in">'
+    +'<div class="kpi-label">'+escH(label)+'</div>'
+    +'<div class="kpi-value">'+escH(fP(value))+'%</div>'
+    +'<div class="prog-bar"><div class="prog-fill '+pgCls(pct)+'" style="width:'+pct+'%"></div></div>'
+    +'<i class="fas '+escH(icon)+' kpi-float"></i></div>';
+}
+function setSpinner(id){document.getElementById(id).innerHTML='<div class="spinner-wrap animate-in"><div class="spinner"></div><span class="text-muted">جاري التحميل...</span></div>';}
+
+function buildMiniTable(sections, partsDivisions){
+  if(!sections||!sections.length)return '<p class="text-muted" style="padding:16px;text-align:center;">لا توجد مقاطع مسجَّلة</p>';
+  var div=Number(partsDivisions)||2;
+  var label=div===4?'الربع':div===1?'الجزء كامل':'الحزب';
+  var map={};
+
+  sections.forEach(function(s){
+    if(!s||!s.partNumber)return;
+    var pn=Number(s.partNumber);if(!pn||pn<1||pn>30)return;
+    var hz=div===1?1:Number(s.hizb||1);
+    if(hz<1||hz>div)return;
+    if(!map[pn]){map[pn]={};for(var i=1;i<=div;i++)map[pn][i]=null;}
+    map[pn][hz]=s;
+  });
+
+  var parts=Object.keys(map).sort(function(a,b){return Number(a)-Number(b);});
+  if(!parts.length)return '<p class="text-muted" style="padding:16px;text-align:center;">لا توجد مقاطع مسجَّلة</p>';
+
+  var thead='<thead>';
+  if(div===1){
+    thead+='<tr>'
+      +'<th class="td-label">المسمّع</th>'
+      +'<th>الجزء</th>'
+      +'<th class="th-part">الأخطاء</th>'
+      +'<th class="th-part">التنبيهات</th>'
+      +'<th class="th-part">الدرجة</th>'
+      +'<th class="th-part">وجه الرسوب</th>'
+      +'</tr>';
+  } else {
+    thead+='<tr><th class="td-label" rowspan="2">المسمّع</th><th rowspan="2">الجزء</th>';
+    for(var i=1;i<=div;i++){
+      thead+='<th colspan="4" class="th-part">'+escH(label)+' '+i+'</th>';
+    }
+    thead+='</tr><tr>';
+    for(var j=1;j<=div;j++){
+      thead+='<th>خطأ</th><th>تنبيه</th><th>الدرجة</th><th>وجه</th>';
+    }
+    thead+='</tr>';
+  }
+  thead+='</thead>';
+
+  var tbody=parts.map(function(pn){
+    var hizbArr=[];
+    for(var i=1;i<=div;i++)hizbArr.push(map[pn][i]);
+
+    var teachers=[];
+    hizbArr.forEach(function(h){if(h&&h.teacherName&&h.teacherName.trim())teachers.push(h.teacherName.trim());});
+    teachers=teachers.filter(function(v,i,a){return a.indexOf(v)===i;});
+    var tD=teachers.length?teachers.join(' / '):'—';
+
+    if(div===1){
+      var h=hizbArr[0];
+      if(!h){
+        return '<tr><td class="td-label">'+escH(tD)+'</td><td class="td-part">'+pn+'</td><td class="cell-empty">—</td><td class="cell-empty">—</td><td class="cell-empty">—</td><td class="cell-empty">—</td></tr>';
+      }
+      var sc=Number(h.score);
+      var scStr=isFinite(sc)?(Math.abs(sc-Math.round(sc))<1e-9?String(Math.round(sc)):String(Math.round(sc*10)/10)):'—';
+      return '<tr>'
+        +'<td class="td-label">'+escH(tD)+'</td>'
+        +'<td class="td-part">'+pn+'</td>'
+        +'<td>'+escH(String(h.mistakes||0))+'</td>'
+        +'<td>'+escH(String(h.warnings||0))+'</td>'
+        +'<td class="'+(h.isPassed?'cell-pass':'cell-fail')+'">'+scStr+'</td>'
+        +'<td style="font-size:.7rem;">'+((!h.isPassed)?escH(String(h.failFace||'')):'')+'</td>'
+        +'</tr>';
+    }
+
+    var cells=hizbArr.map(function(h){
+      if(!h)return'<td class="cell-empty">—</td><td class="cell-empty">—</td><td class="cell-empty">—</td><td class="cell-empty">—</td>';
+      var sc=Number(h.score);
+      var scStr=isFinite(sc)?(Math.abs(sc-Math.round(sc))<1e-9?String(Math.round(sc)):String(Math.round(sc*10)/10)):'—';
+      return '<td>'+escH(String(h.mistakes||0))+'</td>'
+        +'<td>'+escH(String(h.warnings||0))+'</td>'
+        +'<td class="'+(h.isPassed?'cell-pass':'cell-fail')+'">'+scStr+'</td>'
+        +'<td style="font-size:.7rem;">'+((!h.isPassed)?escH(String(h.failFace||'')):'')+'</td>';
+    }).join('');
+
+    return '<tr><td class="td-label">'+escH(tD)+'</td><td class="td-part">'+pn+'</td>'+cells+'</tr>';
+  }).join('');
+
+  return '<div class="mini-tbl-wrap"><table class="mini-table">'+thead+'<tbody>'+tbody+'</tbody></table></div>';
+}
+
+var _data=null,_selTrack='',_selSid='';
+var _refreshTimer=null;
+var _isFirstLoad=true;
+var _isRefreshing=false;
+var _lastUpdatedAt='';
+
+function setRefreshText(msg){
+  var el=document.getElementById('refreshText');
+  if(el) el.textContent=msg||'تحديث تلقائي بالخلفية';
+}
+
+function buildStats(student, summary, sections){
+  var exp=Number((summary&&summary.expectedParts)!=null?summary.expectedParts:(student&&student.partsCount)||0);
+  return {
+    expectedParts: exp,
+    displayedParts: Number(summary&&summary.displayedParts||0),
+    passedParts: Number(summary&&summary.passedParts||0),
+    failedParts: Number(summary&&summary.failedParts||0),
+    remainingParts: Number(summary&&summary.remainingParts||Math.max(0, exp)),
+    coveragePercent: Number(summary&&summary.coveragePercent||0),
+    passFromExpectedPercent: Number(summary&&summary.passFromExpectedPercent||0),
+    failPercent: Number(summary&&summary.failPercent||0),
+    studentPercent: Number(summary&&summary.studentPercent||0),
+    latestSections: Array.isArray(sections) ? sections : []
+  };
+}
+
+function loadData(opts){
+  opts=opts||{};
+  var isBackground=!!opts.background && !_isFirstLoad && !!_data;
+  if(_isRefreshing)return;
+  _isRefreshing=true;
+
+  if(!isBackground){
+    setSpinner('app');
+    setRefreshText('جاري التحميل...');
+  }else{
+    setRefreshText(opts.manual ? 'جاري التحديث بالخلفية...' : 'تحديث تلقائي بالخلفية...');
+  }
+
+  Promise.all([
+    apiGet('initData'),
+    apiGet('getStudents'),
+    apiGet('getDailySummary'),
+    apiGet('getRecords')
+  ]).then(function(res){
+    var init=res[0]||{}, studentsData=res[1]||{}, summaryData=res[2]||{}, recordsData=res[3]||{};
+    var students=(studentsData.students||[]);
+
+    var summaryMap={};
+    Object.keys(summaryData.studentsByHalaqa||{}).forEach(function(hName){
+      (summaryData.studentsByHalaqa[hName]||[]).forEach(function(st){
+        if(st && st.id) summaryMap[st.id]=st;
+      });
+    });
+
+    var recordsMap={};
+    (recordsData.records||[]).forEach(function(r){
+      if(r && r.studentId) recordsMap[r.studentId] = r.sections || [];
+    });
+
+    var trackMap={};
+    students.forEach(function(s){
+      var t = String(s.track || '').trim() || 'بدون مسار';
+      if(!trackMap[t]) trackMap[t] = { name:t };
+    });
+
+    var nextData={
+      settings:init.settings||{},
+      trackConfigs:init.trackConfigs||[],
+      complex:init.complex||{},
+      tracks:Object.keys(trackMap).sort(function(a,b){ return a.localeCompare(b,'ar'); }).map(function(k){ return trackMap[k]; }),
+      students:students,
+      summary:summaryData,
+      summaryMap:summaryMap,
+      recordsMap:recordsMap
+    };
+
+    _data=nextData;
+    if(_data.tracks.length&&!_selTrack)_selTrack=_data.tracks[0].name;
+
+    if(_selTrack&&_data.students){
+      var inT=_data.students.filter(function(s){ return (String(s.track||'').trim() || 'بدون مسار')===_selTrack; });
+      if(!_selSid&&inT.length)_selSid=inT[0].id;
+      if(_selSid&&!inT.some(function(s){return s.id===_selSid;})&&inT.length)_selSid=inT[0].id;
+    }
+
+    render({preserveScroll:isBackground});
+    _lastUpdatedAt=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    _isFirstLoad=false;
+    setRefreshText('آخر تحديث ' + _lastUpdatedAt + ' • يعمل بالخلفية');
+  }).catch(function(e){
+    if(!_data || !isBackground){
+      document.getElementById('app').innerHTML='<div class="card-sard" style="text-align:center;padding:32px;color:var(--danger);"><i class="fas fa-exclamation-circle" style="font-size:2rem;margin-bottom:8px;display:block;"></i>خطأ: '+escH(e.message||String(e))+'</div>';
+    }
+    setRefreshText('تعذر التحديث • المحاولة لاحقًا');
+  }).finally(function(){
+    _isRefreshing=false;
+    clearTimeout(_refreshTimer);
+    _refreshTimer=setTimeout(function(){loadData({background:true});},30000);
+  });
+}
+
+function render(opts){
+  opts=opts||{};
+  var savedScroll = opts.preserveScroll ? window.scrollY : 0;
+  if(!_data)return;
+
+  var tracks=_data.tracks||[];
+  var students=_data.students||[];
+  var summaryMap=_data.summaryMap||{};
+
+  if(!_selTrack&&tracks.length)_selTrack=tracks[0].name;
+
+  var inT=students.filter(function(s){
+    return (String(s.track||'').trim() || 'بدون مسار')===_selTrack;
+  });
+
+  if(!_selSid&&inT.length)_selSid=inT[0].id;
+  if(_selSid&&!inT.some(function(s){return s.id===_selSid;})&&inT.length)_selSid=inT[0].id;
+
+  var selSt=inT.find(function(s){return s.id===_selSid;})||null;
+  var selSummary=selSt ? summaryMap[selSt.id] : null;
+  var selSections=selSt ? (_data.recordsMap[selSt.id] || []) : [];
+  var stats=selSt ? buildStats(selSt, selSummary, selSections) : {expectedParts:0,displayedParts:0,passedParts:0,failedParts:0,remainingParts:0,coveragePercent:0,passFromExpectedPercent:0,failPercent:0,studentPercent:0,latestSections:[]};
+  var div=selSt?Number(selSt.partsDivisions||2)||2:2;
+
+  var trackChips=tracks.map(function(t){
+    var tn=t.name.replace(/'/g,"&#39;");
+    return '<button class="sel-chip '+(_selTrack===t.name?'active':'')+'" onclick="selTrack(\''+tn+'\')">'+escH(t.name)+'</button>';
+  }).join('');
+
+  var studentChips=inT.map(function(s){
+    var sid=String(s.id).replace(/'/g,"&#39;");
+    return '<button class="sel-chip '+(_selSid===s.id?'active':'')+'" onclick="selStudent(\''+sid+'\')">'+escH(s.name)+'</button>';
+  }).join('');
+
+  var studentInfo='';
+  if(selSt){
+    var pct=Math.round(stats.studentPercent);
+    var barColor=fillCls(stats.passFromExpectedPercent);
+    studentInfo=
+      '<div class="student-summary-layout">'
+      +'<div class="card-sard" style="margin-bottom:0;">'
+      +'<div class="card-title" style="margin-bottom:12px;"><i class="fas fa-id-card" style="color:var(--gold);"></i> بيانات الطالب</div>'
+      +'<div class="info-row"><span class="info-label"><i class="fas fa-user" style="color:var(--primary);margin-left:4px;"></i> الاسم</span><span class="info-val">'+escH(selSt.name)+'</span></div>'
+      +'<div class="info-row"><span class="info-label"><i class="fas fa-route" style="color:var(--primary);margin-left:4px;"></i> المسار</span><span class="info-val">'+escH(selSt.track||'—')+'</span></div>'
+      +'<div class="info-row"><span class="info-label"><i class="fas fa-mosque" style="color:var(--primary);margin-left:4px;"></i> الحلقة</span><span class="info-val">'+escH(selSt.halaqa||'—')+'</span></div>'
+      +'<div class="info-row"><span class="info-label"><i class="fas fa-book-quran" style="color:var(--primary);margin-left:4px;"></i> عدد الأجزاء</span><span class="info-val">'+escH(fP(selSt.partsCount||0))+'</span></div>'
+      +'<div class="info-row"><span class="info-label"><i class="fas fa-table-cells" style="color:var(--primary);margin-left:4px;"></i> تقسيم الجزء</span><span class="info-val">'+escH(String(div))+'</span></div>'
+      +'</div>'
+
+      +'<div>'
+      +'<div class="student-kpis-grid-top">'
+      +kpiCard('الأجزاء المفترضة',fP(stats.expectedParts),'fa-list-ol')
+      +kpiCard('الأجزاء المعروضة',fP(stats.displayedParts),'fa-book-open')
+      +'</div>'
+      +'<div class="student-kpis-grid-bottom">'
+      +kpiCard('الأجزاء المجتازة',fP(stats.passedParts),'fa-circle-check','green')
+      +kpiCard('أجزاء الرسوب',fP(stats.failedParts),'fa-circle-xmark','red')
+      +kpiCard('الأجزاء المتبقية',fP(stats.remainingParts),'fa-hourglass-half','gold')
+      +kpiCardBar('نسبة الطالب',stats.studentPercent,'fa-percent')
+      +'</div>'
+      +'</div>'
+      +'</div>'
+
+      +'<div class="card-sard animate-in">'
+      +'<div class="card-title"><i class="fas fa-chart-simple" style="color:var(--gold);"></i> المؤشرات</div>'
+      +'<div class="stat-row"><span class="stat-label">نسبة العرض</span><div class="stat-bar-wrap"><div class="stat-fill" style="width:'+Math.max(0,Math.min(100,stats.coveragePercent))+'%;background:'+barColor+';"></div></div><span class="stat-val">'+fP(stats.coveragePercent)+'%</span></div>'
+      +'<div class="stat-row"><span class="stat-label">نسبة الاجتياز</span><div class="stat-bar-wrap"><div class="stat-fill" style="width:'+Math.max(0,Math.min(100,stats.passFromExpectedPercent))+'%;background:'+fillCls(stats.passFromExpectedPercent)+';"></div></div><span class="stat-val">'+fP(stats.passFromExpectedPercent)+'%</span></div>'
+      +'<div class="stat-row"><span class="stat-label">نسبة الرسوب</span><div class="stat-bar-wrap"><div class="stat-fill" style="width:'+Math.max(0,Math.min(100,stats.failPercent))+'%;background:'+fillCls(stats.failPercent)+';"></div></div><span class="stat-val">'+fP(stats.failPercent)+'%</span></div>'
+      +'<div class="stat-row"><span class="stat-label">نسبة الطالب</span><div class="stat-bar-wrap"><div class="stat-fill" style="width:'+Math.max(0,Math.min(100,pct))+'%;background:'+fillCls(pct)+';"></div></div><span class="stat-val">'+fP(stats.studentPercent)+'%</span></div>'
+      +'</div>';
+  }
+
+  document.getElementById('app').innerHTML=
+    '<div class="card-sard animate-in">'
+    +'<div class="card-title"><i class="fas fa-route" style="color:var(--gold);"></i> اختر المسار</div>'
+    +(tracks.length?'<div class="d-flex flex-wrap gap-2">'+trackChips+'</div>':'<span class="text-muted">لا توجد مسارات</span>')
+    +'</div>'
+    +'<div class="card-sard animate-in">'
+    +'<div class="card-title"><i class="fas fa-user-graduate" style="color:var(--gold);"></i> اختر الطالب</div>'
+    +(inT.length?'<div class="d-flex flex-wrap gap-2">'+studentChips+'</div>':'<span class="text-muted">لا يوجد طلاب في هذا المسار</span>')
+    +'</div>'
+    +(selSt
+      ? studentInfo
+        +'<div class="card-sard animate-in">'
+        +'<div class="card-title"><i class="fas fa-list-check" style="color:var(--gold);"></i> تفاصيل المقاطع المسمَّعة</div>'
+        +buildMiniTable(stats.latestSections||[],div)
+        +'</div>'
+      :''
+    );
+
+  if(opts.preserveScroll){
+    window.scrollTo(0, savedScroll);
+  }
+}
+
+function selTrack(name){
+  _selTrack=name;
+  var inT=(_data&&_data.students?_data.students:[]).filter(function(s){
+    return (String(s.track||'').trim() || 'بدون مسار')===name;
+  });
+  _selSid=inT.length?inT[0].id:'';
+  render();
+}
+function selStudent(id){_selSid=id;render();}
+
+loadData();
+</script>
+</body>
+</html>

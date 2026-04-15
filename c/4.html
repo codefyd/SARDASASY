@@ -1,0 +1,414 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>صفحة التكريم</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap"/>
+  <style>
+    :root{
+      --primary:#014979;--primary-dk:#013560;--primary-lt:#e8f2fb;
+      --gold:#b19738;--gold-lt:#faf3e0;--success:#1a7a4a;
+      --danger:#c0392b;--warning:#d97706;--bg:#f4f6f9;
+      --card-bg:#ffffff;--text:#1e293b;--text-muted:#64748b;
+      --border:rgba(1,73,121,0.10);
+      --shadow-sm:0 2px 8px rgba(1,73,121,0.07);
+      --shadow-md:0 6px 24px rgba(1,73,121,0.10);
+      --shadow-lg:0 12px 40px rgba(1,73,121,0.14);
+      --radius:14px;--radius-sm:8px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+    .navbar-sard{background:var(--primary);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000;box-shadow:0 2px 16px rgba(0,0,0,0.18);}
+    .navbar-brand{color:#fff;font-size:1.15rem;font-weight:800;display:flex;align-items:center;gap:8px;}
+    .navbar-brand i{color:var(--gold);font-size:1.2rem;}
+    .nav-back{padding:6px 14px;border-radius:20px;border:none;background:rgba(255,255,255,0.12);color:rgba(255,255,255,.85);font-family:'Tajawal',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:background .2s;}
+    .nav-back:hover{background:rgba(255,255,255,0.22);}
+    .btn-nav{padding:7px 16px;border-radius:var(--radius-sm);border:none;background:rgba(255,255,255,0.15);color:#fff;font-family:'Tajawal',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .2s;}
+    .btn-nav:hover{background:rgba(255,255,255,0.25);}
+    .page-wrap{padding:20px;max-width:1180px;margin:auto;padding-bottom:40px;}
+    .card-sard{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:20px;margin-bottom:16px;}
+    .card-title{font-size:1rem;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+    .kpi-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:18px;position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s;}
+    .kpi-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+    .kpi-float{position:absolute;left:-10px;bottom:-10px;font-size:4.4rem;opacity:.07;pointer-events:none;transition:transform .3s,opacity .3s;}
+    .kpi-card:hover .kpi-float{transform:scale(1.15) rotate(-5deg);opacity:.12;}
+    .kpi-label{font-size:.78rem;color:var(--text-muted);font-weight:500;margin-bottom:4px;}
+    .kpi-value{font-size:1.85rem;font-weight:800;color:var(--primary);line-height:1.1;}
+    .kpi-value.green{color:var(--success);} .kpi-value.gold{color:var(--gold);} .kpi-value.red{color:var(--danger);}
+    .prog-bar{width:100%;height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:6px;}
+    .prog-fill{height:100%;border-radius:99px;transition:width .6s ease;}
+    .prog-green{background:linear-gradient(90deg,#10b981,#34d399);} .prog-blue{background:linear-gradient(90deg,#3b82f6,#60a5fa);} .prog-amber{background:linear-gradient(90deg,#f59e0b,#fbbf24);} .prog-red{background:linear-gradient(90deg,#ef4444,#f87171);}
+    .badge-sard{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:.78rem;font-weight:700;}
+    .badge-prim{background:var(--primary-lt);color:var(--primary);} .badge-gold{background:var(--gold-lt);color:#7c6620;} .badge-pass{background:#d1fae5;color:#065f46;} .badge-fail{background:#fee2e2;color:#991b1b;} .badge-warn{background:#fef3c7;color:#92400e;}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;} .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;} .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+    @media(max-width:900px){.grid-4,.grid-3{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:640px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}}
+    .filter-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;}
+    @media(max-width:1000px){.filter-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    @media(max-width:640px){.filter-grid{grid-template-columns:1fr;}}
+    .form-label{font-size:.82rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;display:block;}
+    .sard-select,.sard-input{width:100%;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:.92rem;font-weight:500;color:var(--primary);font-family:'Tajawal',sans-serif;}
+    .sard-select:focus,.sard-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(1,73,121,.10);}    
+    .btn-primary-sard{background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);padding:10px 18px;font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+    .btn-primary-sard:hover{background:var(--primary-dk);transform:translateY(-1px);}    
+    .btn-outline-sard{background:transparent;color:var(--primary);border:1.5px solid var(--primary);border-radius:var(--radius-sm);padding:9px 16px;font-family:'Tajawal',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+    .btn-outline-sard:hover{background:var(--primary);color:#fff;}
+    .hero{background:linear-gradient(135deg,rgba(1,73,121,1),rgba(1,53,96,.96));color:#fff;overflow:hidden;position:relative;}
+    .hero::after{content:'';position:absolute;left:-40px;bottom:-50px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle, rgba(177,151,56,.22), transparent 70%);}    
+    .hero h1{font-size:1.45rem;font-weight:900;margin-bottom:8px;display:flex;align-items:center;gap:10px;position:relative;z-index:1;}
+    .hero p{font-size:.92rem;line-height:1.9;color:rgba(255,255,255,.86);position:relative;z-index:1;}
+    .spinner-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:16px;}
+    .spinner{width:44px;height:44px;border:4px solid var(--primary-lt);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .empty-box{padding:28px;text-align:center;color:var(--text-muted);}
+    .top-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+    @media(max-width:900px){.top-grid{grid-template-columns:1fr;}}
+    .podium-card{border:1px solid var(--border);border-radius:18px;padding:18px;background:#fff;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
+    .podium-card.rank-1{background:linear-gradient(135deg,#fff,#faf3e0);border-color:rgba(177,151,56,.28);} 
+    .podium-card.rank-2{background:linear-gradient(135deg,#fff,#f4f7fb);} 
+    .podium-card.rank-3{background:linear-gradient(135deg,#fff,#f9f5ef);} 
+    .rank-badge{width:42px;height:42px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.12);} 
+    .rank-1 .rank-badge{background:linear-gradient(135deg,#d4af37,#b19738);} .rank-2 .rank-badge{background:linear-gradient(135deg,#94a3b8,#64748b);} .rank-3 .rank-badge{background:linear-gradient(135deg,#c08457,#9a6b45);} 
+    .student-name{font-size:1.12rem;font-weight:900;color:var(--primary);margin:10px 0 6px;}
+    .student-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+    .metric-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;font-size:.86rem;}
+    .metric-label{color:var(--text-muted);font-weight:700;} .metric-value{font-weight:800;color:var(--text);} 
+    .tbl-wrap{overflow-x:auto;border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);}
+    .sard-table{width:100%;border-collapse:collapse;font-size:.84rem;}
+    .sard-table thead th{background:var(--primary-lt);color:var(--primary);font-weight:800;padding:10px 12px;text-align:right;border-bottom:2px solid rgba(1,73,121,.15);white-space:nowrap;}
+    .sard-table tbody tr{background:#fff;transition:background .15s;} .sard-table tbody tr:nth-child(even){background:#fafbfd;} .sard-table tbody tr:hover{background:var(--primary-lt);} 
+    .sard-table tbody td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:.76rem;font-weight:800;background:#f8fafc;color:#475569;}
+    .pill.top{background:#fef3c7;color:#92400e;}
+    .section-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+    .section-tools-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .text-muted{color:var(--text-muted);font-size:.85rem;} .fw-bold{font-weight:700;}
+  </style>
+</head>
+<body>
+<nav class="navbar-sard">
+  <div class="navbar-brand"><i class="fas fa-award"></i><span>صفحة التكريم</span></div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <button onclick="loadData()" class="btn-nav"><i class="fas fa-rotate"></i> تحديث</button>
+    <a href="../" class="nav-back"><i class="fas fa-arrow-right"></i> العودة</a>
+  </div>
+</nav>
+
+<div class="page-wrap" id="app">
+  <div class="spinner-wrap"><div class="spinner"></div><span class="text-muted">جاري تحميل صفحة التكريم...</span></div>
+</div>
+
+<script>
+const API="https://script.google.com/macros/s/AKfycbwhK6Xt_lWe4jGidKO4n-yT774a047rvxRhzX6fklakJM0_5QXEEmtWz-GpjPGw2ZAS/exec";
+
+async function apiGet(action, params){
+  var url=new URL(API);
+  url.searchParams.set('action', action);
+  if(params) Object.keys(params).forEach(function(k){
+    if(params[k]!==undefined && params[k]!==null) url.searchParams.set(k, String(params[k]));
+  });
+  url.searchParams.set('_ts', Date.now().toString());
+  var res=await fetch(url.toString(), {method:'GET', cache:'no-store'});
+  var data=await res.json();
+  if(!res.ok || (data && data.error)) throw new Error((data && data.error) || ('HTTP '+res.status));
+  return data;
+}
+
+function escH(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);});}
+function fN(v){return Number(v||0).toLocaleString('en-US');}
+function fP(v){return Number(v||0).toLocaleString('en-US',{maximumFractionDigits:1});}
+function fillCls(p){p=Number(p||0);return p>=90?'prog-green':p>=75?'prog-blue':p>=60?'prog-amber':'prog-red';}
+function metricColorClass(p){p=Number(p||0);return p>=90?'green':p>=75?'':p>=60?'gold':'red';}
+
+var STATE={
+  init:null,
+  students:[],
+  records:[],
+  honorRows:[],
+  filters:{halaqa:'__all__', track:'__all__', mode:'overall', minPercent:'0', limit:'20'}
+};
+
+function getEffectiveDivisions(student){
+  var init=STATE.init||{};
+  var settings=init.settings||{};
+  var trackConfigs=init.trackConfigs||[];
+  var tc=trackConfigs.find(function(t){return t && t.name===student.track;});
+  if(tc && Number(tc.partsDivisions)) return Number(tc.partsDivisions);
+  return Number(settings.partsDivisions||2) || 2;
+}
+
+function pickLatestSections(sections, div){
+  var map={};
+  (sections||[]).forEach(function(sec, idx){
+    if(!sec || !sec.partNumber) return;
+    var part=Number(sec.partNumber||0);
+    if(!part || part<1 || part>30) return;
+    var hizb=div===1 ? 1 : Number(sec.hizb||0);
+    if(!hizb || hizb<1 || hizb>div) return;
+    var dateKey=Date.parse(String(sec.date||''));
+    if(isNaN(dateKey)) dateKey=0;
+    var key=part+'|'+hizb;
+    if(!map[key] || dateKey>map[key]._dateKey || (dateKey===map[key]._dateKey && idx>=map[key]._idx)){
+      map[key]=Object.assign({}, sec, {_dateKey:dateKey,_idx:idx});
+    }
+  });
+  return Object.keys(map).map(function(k){return map[k];}).sort(function(a,b){
+    var pa=Number(a.partNumber||0), pb=Number(b.partNumber||0);
+    if(pa!==pb) return pa-pb;
+    return Number(a.hizb||0)-Number(b.hizb||0);
+  });
+}
+
+function calcHonorRow(student, record){
+  var div=getEffectiveDivisions(student);
+  var latestSections=pickLatestSections((record&&record.sections)||[], div);
+  var totalScore=latestSections.reduce(function(sum, sec){
+    var score=Number(sec && sec.score || 0);
+    return sum + (isFinite(score)?score:0);
+  }, 0);
+  var passedSections=latestSections.filter(function(sec){return !!sec.isPassed;}).length;
+  var failedSections=latestSections.length - passedSections;
+  var displayedParts=latestSections.length / div;
+  var passedParts=passedSections / div;
+  var failedParts=failedSections / div;
+  var expectedParts=Number(student.partsCount||0);
+  var remainingParts=Math.max(0, expectedParts - displayedParts);
+  var overallPercent=expectedParts>0 ? (totalScore / (expectedParts * 20)) * 100 : 0;
+  var completionPercent=expectedParts>0 ? (displayedParts / expectedParts) * 100 : 0;
+  var excellencePercent=displayedParts>0 ? (totalScore / (displayedParts * 20)) * 100 : 0;
+  var passPercent=expectedParts>0 ? (passedParts / expectedParts) * 100 : 0;
+  var attendanceStatus=student.attendanceStatus || '';
+  var honorType = overallPercent >= 90 ? 'متفوّق' : overallPercent >= 75 ? 'متميّز' : overallPercent >= 60 ? 'جيّد' : 'قيد المتابعة';
+
+  return {
+    id:student.id,
+    name:student.name||'',
+    halaqa:student.halaqa||'بدون حلقة',
+    track:student.track||'بدون مسار',
+    attendanceStatus:attendanceStatus,
+    partsCount:expectedParts,
+    partsDivisions:div,
+    displayedParts:displayedParts,
+    passedParts:passedParts,
+    failedParts:failedParts,
+    remainingParts:remainingParts,
+    totalScore:totalScore,
+    overallPercent:overallPercent,
+    completionPercent:completionPercent,
+    excellencePercent:excellencePercent,
+    passPercent:passPercent,
+    honorType:honorType,
+    sectionsCount:latestSections.length,
+    latestSections:latestSections
+  };
+}
+
+function loadData(){
+  document.getElementById('app').innerHTML='<div class="spinner-wrap"><div class="spinner"></div><span class="text-muted">جاري تحميل صفحة التكريم...</span></div>';
+  Promise.all([apiGet('initData'), apiGet('getStudents'), apiGet('getRecords')]).then(function(res){
+    STATE.init=res[0]||{};
+    STATE.students=(res[1]&&res[1].students)||[];
+    STATE.records=(res[2]&&res[2].records)||[];
+
+    var recMap={};
+    STATE.records.forEach(function(r){ if(r && r.studentId) recMap[r.studentId]=r; });
+    STATE.honorRows=STATE.students.map(function(st){return calcHonorRow(st, recMap[st.id]);});
+    render();
+  }).catch(function(err){
+    document.getElementById('app').innerHTML='<div class="card-sard" style="text-align:center;padding:32px;color:var(--danger);"><i class="fas fa-circle-exclamation" style="font-size:2rem;margin-bottom:8px;display:block;"></i>خطأ: '+escH(err.message||String(err))+'</div>';
+  });
+}
+
+function uniqueValues(key){
+  var map={};
+  STATE.honorRows.forEach(function(r){ if(r && r[key]) map[r[key]]=true; });
+  return Object.keys(map).sort(function(a,b){ return a.localeCompare(b,'ar'); });
+}
+
+function getFilteredRows(){
+  var f=STATE.filters;
+  var rows=STATE.honorRows.filter(function(r){
+    if(f.halaqa!=='__all__' && r.halaqa!==f.halaqa) return false;
+    if(f.track!=='__all__' && r.track!==f.track) return false;
+    if(Number(r.overallPercent||0) < Number(f.minPercent||0)) return false;
+    if(f.mode==='elite' && Number(r.overallPercent||0) < 90) return false;
+    if(f.mode==='completed' && Number(r.remainingParts||0) > 0) return false;
+    if(f.mode==='high-completion' && Number(r.completionPercent||0) < 90) return false;
+    return true;
+  });
+
+  rows.sort(function(a,b){
+    if(f.mode==='completed'){
+      if(Number(b.overallPercent||0)!==Number(a.overallPercent||0)) return Number(b.overallPercent||0)-Number(a.overallPercent||0);
+      return Number(b.totalScore||0)-Number(a.totalScore||0);
+    }
+    if(f.mode==='high-completion'){
+      if(Number(b.completionPercent||0)!==Number(a.completionPercent||0)) return Number(b.completionPercent||0)-Number(a.completionPercent||0);
+      return Number(b.overallPercent||0)-Number(a.overallPercent||0);
+    }
+    if(Number(b.overallPercent||0)!==Number(a.overallPercent||0)) return Number(b.overallPercent||0)-Number(a.overallPercent||0);
+    if(Number(b.totalScore||0)!==Number(a.totalScore||0)) return Number(b.totalScore||0)-Number(a.totalScore||0);
+    return Number(b.passedParts||0)-Number(a.passedParts||0);
+  });
+
+  return rows;
+}
+
+function getModeLabel(mode){
+  return mode==='elite' ? 'المتفوقون 90% فأعلى' : mode==='completed' ? 'المكتملون' : mode==='high-completion' ? 'الأعلى إنجازًا' : 'الترتيب العام';
+}
+
+function statusLabel(s){
+  return s==='present'?'حاضر':s==='late'?'متأخر':s==='excused'?'معتذر':s==='absent'?'غائب':'—';
+}
+function statusBadge(s){
+  return s==='present'?'badge-pass':s==='late'?'badge-warn':s==='excused'?'badge-prim':s==='absent'?'badge-fail':'badge-prim';
+}
+
+function renderKpiCard(label,value,icon,colorCls,barPct){
+  return '<div class="kpi-card">'
+    +'<div class="kpi-label">'+escH(label)+'</div>'
+    +'<div class="kpi-value '+(colorCls||'')+'">'+escH(String(value))+'</div>'
+    +(barPct!==undefined?'<div class="prog-bar"><div class="prog-fill '+fillCls(barPct)+'" style="width:'+Math.max(0,Math.min(100,Number(barPct||0)))+'%"></div></div>':'')
+    +'<i class="fas '+escH(icon)+' kpi-float"></i>'
+    +'</div>';
+}
+
+function renderFilters(rows){
+  var halaqas=uniqueValues('halaqa');
+  var tracks=uniqueValues('track');
+  return ''
+    +'<div class="card-sard">'
+      +'<div class="section-tools">'
+        +'<div class="card-title" style="margin-bottom:0;"><i class="fas fa-filter" style="color:var(--gold);"></i>فلاتر التكريم</div>'
+        +'<div class="section-tools-right">'
+          +'<span class="badge-sard badge-gold"><i class="fas fa-list-check"></i> '+escH(getModeLabel(STATE.filters.mode))+'</span>'
+          +'<span class="badge-sard badge-prim"><i class="fas fa-users"></i> النتائج: '+escH(String(rows.length))+'</span>'
+        +'</div>'
+      +'</div>'
+      +'<div class="filter-grid">'
+        +'<div><label class="form-label">الحلقة</label><select class="sard-select" onchange="setFilter(\'halaqa\',this.value)"><option value="__all__"'+(STATE.filters.halaqa==='__all__'?' selected':'')+'>كل الحلق</option>'
+          +halaqas.map(function(h){return '<option value="'+escH(h)+'"'+(STATE.filters.halaqa===h?' selected':'')+'>'+escH(h)+'</option>';}).join('')
+        +'</select></div>'
+        +'<div><label class="form-label">المسار</label><select class="sard-select" onchange="setFilter(\'track\',this.value)"><option value="__all__"'+(STATE.filters.track==='__all__'?' selected':'')+'>كل المسارات</option>'
+          +tracks.map(function(t){return '<option value="'+escH(t)+'"'+(STATE.filters.track===t?' selected':'')+'>'+escH(t)+'</option>';}).join('')
+        +'</select></div>'
+        +'<div><label class="form-label">نمط التكريم</label><select class="sard-select" onchange="setFilter(\'mode\',this.value)">'
+          +'<option value="overall"'+(STATE.filters.mode==='overall'?' selected':'')+'>الترتيب العام</option>'
+          +'<option value="elite"'+(STATE.filters.mode==='elite'?' selected':'')+'>المتفوقون 90% فأعلى</option>'
+          +'<option value="completed"'+(STATE.filters.mode==='completed'?' selected':'')+'>المكتملون</option>'
+          +'<option value="high-completion"'+(STATE.filters.mode==='high-completion'?' selected':'')+'>الأعلى إنجازًا</option>'
+        +'</select></div>'
+        +'<div><label class="form-label">الحد الأدنى للنسبة</label><select class="sard-select" onchange="setFilter(\'minPercent\',this.value)">'
+          +['0','60','70','75','80','85','90'].map(function(v){return '<option value="'+v+'"'+(STATE.filters.minPercent===v?' selected':'')+'>'+v+'%</option>';}).join('')
+        +'</select></div>'
+        +'<div><label class="form-label">عدد المعروضين</label><select class="sard-select" onchange="setFilter(\'limit\',this.value)">'
+          +['10','20','30','50','9999'].map(function(v){return '<option value="'+v+'"'+(STATE.filters.limit===v?' selected':'')+'>'+(v==='9999'?'الكل':v)+'</option>';}).join('')
+        +'</select></div>'
+      +'</div>'
+    +'</div>';
+}
+
+function renderPodium(rows){
+  if(!rows.length) return '<div class="card-sard"><div class="empty-box">لا توجد نتائج مطابقة للفلاتر الحالية</div></div>';
+  var top3=rows.slice(0,3);
+  return '<div class="card-sard">'
+    +'<div class="card-title"><i class="fas fa-trophy" style="color:var(--gold);"></i>أوائل التكريم</div>'
+    +'<div class="top-grid">'
+    +top3.map(function(r,idx){
+      var rank=idx+1;
+      return '<div class="podium-card rank-'+rank+'">'
+        +'<span class="rank-badge">'+rank+'</span>'
+        +'<div class="student-name">'+escH(r.name)+'</div>'
+        +'<div class="student-meta">'
+          +'<span class="badge-sard badge-prim"><i class="fas fa-mosque"></i>'+escH(r.halaqa)+'</span>'
+          +'<span class="badge-sard badge-gold"><i class="fas fa-route"></i>'+escH(r.track)+'</span>'
+          +'<span class="badge-sard '+statusBadge(r.attendanceStatus)+'"><i class="fas fa-user-check"></i>'+escH(statusLabel(r.attendanceStatus))+'</span>'
+        +'</div>'
+        +'<div class="metric-row"><span class="metric-label">النسبة الكلية</span><span class="metric-value">'+escH(fP(r.overallPercent))+'%</span></div>'
+        +'<div class="prog-bar"><div class="prog-fill '+fillCls(r.overallPercent)+'" style="width:'+Math.max(0,Math.min(100,Number(r.overallPercent||0)))+'%"></div></div>'
+        +'<div class="metric-row"><span class="metric-label">مجموع الدرجات</span><span class="metric-value">'+escH(fP(r.totalScore))+'</span></div>'
+        +'<div class="metric-row"><span class="metric-label">الأجزاء المعروضة</span><span class="metric-value">'+escH(fP(r.displayedParts))+'</span></div>'
+        +'<div class="metric-row"><span class="metric-label">المتبقي</span><span class="metric-value">'+escH(fP(r.remainingParts))+'</span></div>'
+      +'</div>';
+    }).join('')
+    +'</div>'
+  +'</div>';
+}
+
+function renderTable(rows){
+  if(!rows.length) return '<div class="card-sard"><div class="empty-box">لا توجد نتائج مطابقة للفلاتر الحالية</div></div>';
+  var limit=Number(STATE.filters.limit||20);
+  var viewRows=limit===9999 ? rows : rows.slice(0, limit);
+  return '<div class="card-sard">'
+    +'<div class="section-tools">'
+      +'<div class="card-title" style="margin-bottom:0;"><i class="fas fa-medal" style="color:var(--gold);"></i>قائمة المكرّمين</div>'
+      +'<div class="section-tools-right">'
+        +'<span class="pill top"><i class="fas fa-ranking-star"></i> الترتيب حسب '+escH(getModeLabel(STATE.filters.mode))+'</span>'
+      +'</div>'
+    +'</div>'
+    +'<div class="tbl-wrap"><table class="sard-table"><thead><tr>'
+      +'<th>#</th><th>الطالب</th><th>الحلقة</th><th>المسار</th><th>مجموع الدرجات</th><th>النسبة الكلية</th><th>نسبة الإنجاز</th><th>الأجزاء المجتازة</th><th>المتبقي</th><th>الحضور</th><th>التصنيف</th>'
+    +'</tr></thead><tbody>'
+    +viewRows.map(function(r,idx){
+      return '<tr>'
+        +'<td><span class="pill '+(idx<3?'top':'')+'">'+(idx+1)+'</span></td>'
+        +'<td><div class="fw-bold">'+escH(r.name)+'</div><div class="text-muted">المحفوظ: '+escH(fP(r.partsCount))+' جزء</div></td>'
+        +'<td>'+escH(r.halaqa)+'</td>'
+        +'<td>'+escH(r.track)+'</td>'
+        +'<td>'+escH(fP(r.totalScore))+'</td>'
+        +'<td><span class="badge-sard '+(Number(r.overallPercent)>=90?'badge-pass':Number(r.overallPercent)>=75?'badge-gold':Number(r.overallPercent)>=60?'badge-prim':'badge-fail')+'">'+escH(fP(r.overallPercent))+'%</span></td>'
+        +'<td>'+escH(fP(r.completionPercent))+'%</td>'
+        +'<td>'+escH(fP(r.passedParts))+'</td>'
+        +'<td>'+escH(fP(r.remainingParts))+'</td>'
+        +'<td><span class="badge-sard '+statusBadge(r.attendanceStatus)+'">'+escH(statusLabel(r.attendanceStatus))+'</span></td>'
+        +'<td>'+escH(r.honorType)+'</td>'
+      +'</tr>';
+    }).join('')
+    +'</tbody></table></div>'
+  +'</div>';
+}
+
+function render(){
+  var rows=getFilteredRows();
+  var avgOverall=rows.length ? rows.reduce(function(s,r){return s+Number(r.overallPercent||0);},0)/rows.length : 0;
+  var avgCompletion=rows.length ? rows.reduce(function(s,r){return s+Number(r.completionPercent||0);},0)/rows.length : 0;
+  var elites=rows.filter(function(r){return Number(r.overallPercent||0)>=90;}).length;
+  var completed=rows.filter(function(r){return Number(r.remainingParts||0)<=0;}).length;
+  var complexName=((STATE.init||{}).complex||{}).complexName || 'برنامج السرد';
+
+  document.getElementById('app').innerHTML=''
+    +'<div class="card-sard hero">'
+      +'<h1><i class="fas fa-crown"></i> صفحة تكريم المتفوقين</h1>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;position:relative;z-index:1;">'
+        +'<span class="badge-sard badge-gold"><i class="fas fa-building-columns"></i>'+escH(complexName)+'</span>'
+        +'<span class="badge-sard badge-prim"><i class="fas fa-users"></i> الطلاب: '+escH(String(STATE.honorRows.length))+'</span>'
+        +'<span class="badge-sard badge-pass"><i class="fas fa-filter-circle-dollar"></i> النتائج الحالية: '+escH(String(rows.length))+'</span>'
+      +'</div>'
+    +'</div>'
+    +renderFilters(rows)
+    +'<div class="grid-4">'
+      +renderKpiCard('عدد المكرّمين', fN(rows.length), 'fa-award')
+      +renderKpiCard('المتفوقون 90%+', fN(elites), 'fa-star', 'green')
+      +renderKpiCard('المكتملون', fN(completed), 'fa-flag-checkered', 'gold')
+      +renderKpiCard('متوسط النسبة', fP(avgOverall)+'%', 'fa-chart-line', metricColorClass(avgOverall), avgOverall)
+    +'</div>'
+    +'<div class="grid-2" style="margin-top:12px;">'
+      +renderKpiCard('متوسط الإنجاز', fP(avgCompletion)+'%', 'fa-bars-progress', metricColorClass(avgCompletion), avgCompletion)
+    +'</div>'
+    +'<div style="margin-top:16px;">'+renderPodium(rows)+'</div>'
+    +renderTable(rows);
+}
+
+function setFilter(key,val){
+  STATE.filters[key]=val;
+  render();
+}
+
+loadData();
+</script>
+</body>
+</html>
