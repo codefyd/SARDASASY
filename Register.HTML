@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>تسجيل مجمع جديد — منصة السرد</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap"/>
+<style>
+:root{
+  --primary:#014979;--primary-dk:#013560;--primary-lt:#e8f2fb;
+  --gold:#b19738;--gold-lt:#faf3e0;--success:#1a7a4a;
+  --danger:#c0392b;--warning:#d97706;--bg:#f4f6f9;
+  --card-bg:#ffffff;--text:#1e293b;--text-muted:#64748b;
+  --border:rgba(1,73,121,0.12);
+  --shadow-sm:0 2px 8px rgba(1,73,121,0.07);
+  --shadow-md:0 6px 24px rgba(1,73,121,0.12);
+  --shadow-lg:0 16px 48px rgba(1,73,121,0.18);
+  --radius:16px;--radius-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ===== HERO ===== */
+.hero{
+  background:linear-gradient(145deg, var(--primary-dk) 0%, var(--primary) 60%, #0a6fa8 100%);
+  padding:48px 20px 36px;text-align:center;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-icon{
+  width:72px;height:72px;background:rgba(255,255,255,0.12);border-radius:20px;
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-bottom:16px;font-size:2rem;color:#fff;border:1px solid rgba(255,255,255,0.2);
+  position:relative;
+}
+.hero-icon i{color:var(--gold);}
+.hero h1{font-size:1.7rem;font-weight:900;color:#fff;margin-bottom:6px;}
+.hero p{color:rgba(255,255,255,0.75);font-size:.95rem;max-width:440px;margin:auto;}
+
+/* ===== STEPS ===== */
+.steps-bar{
+  display:flex;align-items:center;justify-content:center;gap:0;
+  padding:20px;background:#fff;border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm);
+}
+.step-item{display:flex;align-items:center;gap:0;}
+.step-dot{
+  width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.85rem;border:2px solid #d1d5db;
+  background:#fff;color:#94a3b8;transition:all .3s;
+}
+.step-dot.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 0 0 4px rgba(1,73,121,.15);}
+.step-dot.done{background:var(--success);border-color:var(--success);color:#fff;}
+.step-label{font-size:.78rem;font-weight:600;color:#94a3b8;margin-top:4px;transition:color .3s;}
+.step-label.active{color:var(--primary);}
+.step-label.done{color:var(--success);}
+.step-connector{width:40px;height:2px;background:#e2e8f0;margin:0 4px;flex-shrink:0;transition:background .3s;}
+.step-connector.done{background:var(--success);}
+.step-wrap{display:flex;flex-direction:column;align-items:center;}
+
+/* ===== FORM ===== */
+.form-wrap{max-width:600px;margin:28px auto;padding:0 16px 60px;}
+.card-sard{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:24px;margin-bottom:20px;}
+.card-title{font-size:1rem;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px;margin-bottom:20px;}
+.card-title i{color:var(--gold);}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-group{margin-bottom:14px;}
+.form-label{font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:4px;}
+.form-label .req{color:var(--danger);font-size:.7rem;}
+.form-input{
+  width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  font-family:'Tajawal',sans-serif;font-size:.92rem;color:var(--text);background:#fff;
+  transition:all .2s;
+}
+.form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(1,73,121,.1);}
+.form-input.error{border-color:var(--danger);}
+.form-input::placeholder{color:#b0bec5;}
+.field-err{font-size:.78rem;color:var(--danger);margin-top:4px;display:none;}
+.field-err.show{display:block;}
+
+/* ===== INFO BLOCKS ===== */
+.info-block{
+  background:var(--primary-lt);border:1px solid rgba(1,73,121,0.18);
+  border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.info-block i{color:var(--primary);margin-top:2px;flex-shrink:0;}
+.info-block p{font-size:.85rem;color:var(--primary);line-height:1.6;}
+
+/* ===== METHODS ===== */
+.method-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.method-card{
+  border:2px solid var(--border);border-radius:var(--radius-sm);padding:16px;cursor:pointer;
+  transition:all .25s;text-align:center;background:#fff;position:relative;overflow:hidden;
+}
+.method-card:hover{border-color:var(--primary);box-shadow:var(--shadow-sm);}
+.method-card.selected{border-color:var(--primary);background:var(--primary-lt);}
+.method-card.selected::after{
+  content:'\f058';font-family:'Font Awesome 6 Free';font-weight:900;
+  position:absolute;top:8px;left:8px;color:var(--primary);font-size:.9rem;
+}
+.method-icon{font-size:1.8rem;margin-bottom:8px;}
+.method-icon.csv{color:#217346;}
+.method-icon.sheets{color:#0f9d58;}
+.method-icon.manual{color:var(--gold);}
+.method-title{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:3px;}
+.method-desc{font-size:.75rem;color:var(--text-muted);}
+
+/* ===== UPLOAD ===== */
+.upload-zone{
+  border:2px dashed var(--border);border-radius:var(--radius-sm);padding:32px 20px;
+  text-align:center;cursor:pointer;transition:all .25s;background:#fafbfd;
+  position:relative;
+}
+.upload-zone:hover{border-color:var(--primary);background:var(--primary-lt);}
+.upload-zone.dragging{border-color:var(--primary);background:var(--primary-lt);}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon{font-size:2rem;color:var(--text-muted);margin-bottom:8px;}
+.upload-title{font-size:.9rem;font-weight:600;color:var(--primary);margin-bottom:4px;}
+.upload-sub{font-size:.78rem;color:var(--text-muted);}
+.file-preview{display:none;align-items:center;gap:10px;padding:10px 14px;background:#f0fdf4;border-radius:var(--radius-sm);border:1px solid #bbf7d0;}
+.file-preview.show{display:flex;}
+.file-preview i{color:var(--success);}
+
+/* ===== CSV COLUMNS ===== */
+.col-map{display:none;}
+.col-map.show{display:block;}
+.col-map-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;align-items:center;}
+.col-map-label{font-size:.82rem;font-weight:600;color:var(--primary);}
+.col-select{
+  appearance:none;width:100%;padding:7px 28px 7px 10px;border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);font-family:'Tajawal',sans-serif;font-size:.82rem;
+  background:#fff url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23014979' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") no-repeat left 6px center / 1.1em;
+  color:var(--text);cursor:pointer;
+}
+.col-select:focus{outline:none;border-color:var(--primary);}
+
+/* ===== TERMS ===== */
+.terms-box{
+  max-height:180px;overflow-y:auto;background:#fafbfd;border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:14px;font-size:.82rem;color:var(--text-muted);
+  line-height:1.8;margin-bottom:14px;
+}
+.terms-box h4{color:var(--primary);font-size:.88rem;margin-bottom:6px;}
+.terms-check{display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(--gold-lt);border-radius:var(--radius-sm);border:1px solid rgba(177,151,56,.25);}
+.terms-check input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary);flex-shrink:0;margin-top:1px;}
+.terms-check label{font-size:.85rem;font-weight:600;color:var(--text);cursor:pointer;}
+
+/* ===== SUMMARY ===== */
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
+.summary-row:last-child{border:none;}
+.summary-label{font-size:.82rem;color:var(--text-muted);font-weight:500;}
+.summary-val{font-size:.88rem;font-weight:700;color:var(--text);}
+.tag-method{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.78rem;font-weight:600;background:var(--primary-lt);color:var(--primary);}
+
+/* ===== BUTTONS ===== */
+.btn-row{display:flex;gap:10px;margin-top:20px;}
+.btn-primary{
+  flex:1;padding:13px;border:none;border-radius:var(--radius-sm);
+  background:linear-gradient(135deg,var(--primary),var(--primary-dk));
+  color:#fff;font-family:'Tajawal',sans-serif;font-size:.97rem;font-weight:800;
+  cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 16px rgba(1,73,121,.25);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(1,73,121,.3);}
+.btn-primary:disabled{opacity:.6;transform:none;cursor:not-allowed;}
+.btn-secondary{
+  padding:13px 20px;border:2px solid var(--border);border-radius:var(--radius-sm);
+  background:#fff;color:var(--primary);font-family:'Tajawal',sans-serif;font-size:.9rem;
+  font-weight:700;cursor:pointer;transition:all .2s;
+}
+.btn-secondary:hover{border-color:var(--primary);background:var(--primary-lt);}
+
+/* ===== SUCCESS ===== */
+.success-screen{display:none;text-align:center;padding:40px 20px;}
+.success-screen.show{display:block;}
+.success-icon{
+  width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#d1fae5,#a7f3d0);
+  display:inline-flex;align-items:center;justify-content:center;font-size:2.2rem;
+  margin-bottom:20px;border:2px solid #6ee7b7;
+}
+.success-screen h2{font-size:1.5rem;font-weight:800;color:var(--primary);margin-bottom:8px;}
+.success-screen p{color:var(--text-muted);font-size:.92rem;max-width:380px;margin:auto;}
+.req-id-box{
+  background:var(--primary-lt);border:2px dashed rgba(1,73,121,.25);border-radius:var(--radius-sm);
+  padding:16px;margin:20px auto;max-width:340px;
+}
+.req-id-box .lbl{font-size:.78rem;color:var(--text-muted);margin-bottom:4px;}
+.req-id-box .rid{font-size:1.4rem;font-weight:900;color:var(--primary);letter-spacing:2px;}
+
+/* ===== STEPS VIEW ===== */
+.step-content{display:none;animation:fadeUp .3s ease;}
+.step-content.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .form-row{grid-template-columns:1fr;}
+  .method-cards{grid-template-columns:1fr;}
+  .col-map-row{grid-template-columns:1fr;}
+  .step-label{display:none;}
+  .step-connector{width:24px;}
+  .hero h1{font-size:1.35rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-icon"><i class="fas fa-quran"></i></div>
+  <h1>تسجيل مجمع في منصة السرد</h1>
+  <p>أكمل الخطوات التالية وسيصلك رابط نظامك خلال 24 ساعة بعد المراجعة</p>
+</div>
+
+<!-- STEPS BAR -->
+<div class="steps-bar" id="stepsBar">
+  <div class="step-item">
+    <div class="step-wrap">
+      <div class="step-dot active" id="dot1">١</div>
+      <div class="step-label active" id="lbl1">بيانات المجمع</div>
+    </div>
+  </div>
+  <div class="step-connector" id="conn1"></div>
+  <div class="step-item">
+    <div class="step-wrap">
+      <div class="step-dot" id="dot2">٢</div>
+      <div class="step-label" id="lbl2">رفع الطلاب</div>
+    </div>
+  </div>
+  <div class="step-connector" id="conn2"></div>
+  <div class="step-item">
+    <div class="step-wrap">
+      <div class="step-dot" id="dot3">٣</div>
+      <div class="step-label" id="lbl3">الشروط</div>
+    </div>
+  </div>
+  <div class="step-connector" id="conn3"></div>
+  <div class="step-item">
+    <div class="step-wrap">
+      <div class="step-dot" id="dot4">٤</div>
+      <div class="step-label" id="lbl4">المراجعة</div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM -->
+<div class="form-wrap">
+
+  <!-- ==================== STEP 1 ==================== -->
+  <div class="step-content active" id="step1">
+    <div class="card-sard">
+      <div class="card-title"><i class="fas fa-building-columns"></i> بيانات المجمع</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">اسم المجمع <span class="req">*</span></div>
+          <input class="form-input" id="f_name" type="text" placeholder="مجمع القرآن الكريم"/>
+          <div class="field-err" id="err_name">هذا الحقل مطلوب</div>
+        </div>
+        <div class="form-group">
+          <div class="form-label">المدينة <span class="req">*</span></div>
+          <input class="form-input" id="f_city" type="text" placeholder="الرياض"/>
+          <div class="field-err" id="err_city">هذا الحقل مطلوب</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">اسم المدير / المسؤول <span class="req">*</span></div>
+          <input class="form-input" id="f_manager" type="text" placeholder="أحمد محمد الغامدي"/>
+          <div class="field-err" id="err_manager">هذا الحقل مطلوب</div>
+        </div>
+        <div class="form-group">
+          <div class="form-label">رقم الجوال <span class="req">*</span></div>
+          <input class="form-input" id="f_phone" type="tel" placeholder="05xxxxxxxx" dir="ltr"/>
+          <div class="field-err" id="err_phone">رقم جوال غير صحيح</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">البريد الإلكتروني <span class="req">*</span></div>
+        <input class="form-input" id="f_email" type="email" placeholder="info@masjed.com" dir="ltr"/>
+        <div class="field-err" id="err_email">بريد إلكتروني غير صحيح</div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">اسم الدورة <span class="req">*</span></div>
+        <input class="form-input" id="f_session" type="text" placeholder="دورة صيف ١٤٤٦"/>
+        <div class="field-err" id="err_session">هذا الحقل مطلوب</div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">عدد الطلاب التقريبي</div>
+        <select class="form-input" id="f_students_count">
+          <option value="">اختر...</option>
+          <option value="1-20">أقل من 20 طالباً</option>
+          <option value="20-50">20 – 50 طالباً</option>
+          <option value="50-100">50 – 100 طالب</option>
+          <option value="100-200">100 – 200 طالب</option>
+          <option value="200+">أكثر من 200</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="goStep(2)">
+        <span>التالي</span><i class="fas fa-arrow-left"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== STEP 2 ==================== -->
+  <div class="step-content" id="step2">
+    <div class="card-sard">
+      <div class="card-title"><i class="fas fa-users"></i> طريقة إضافة الطلاب</div>
+
+      <div class="info-block">
+        <i class="fas fa-circle-info fa-sm"></i>
+        <p>يمكنك رفع بيانات الطلاب الآن أو تركها فارغة — يمكن للمشرف الإضافة لاحقاً من لوحة التحكم بعد القبول.</p>
+      </div>
+
+      <div class="method-cards">
+        <div class="method-card" id="mc_csv" onclick="selectMethod('csv')">
+          <div class="method-icon csv"><i class="fas fa-file-csv"></i></div>
+          <div class="method-title">رفع ملف CSV</div>
+          <div class="method-desc">ملف إكسل أو CSV جاهز</div>
+        </div>
+        <div class="method-card" id="mc_sheets" onclick="selectMethod('sheets')">
+          <div class="method-icon sheets"><i class="fab fa-google"></i></div>
+          <div class="method-title">Google Sheets</div>
+          <div class="method-desc">أدخل رابط الشيت مباشرة</div>
+        </div>
+        <div class="method-card" id="mc_manual" onclick="selectMethod('manual')">
+          <div class="method-icon manual"><i class="fas fa-keyboard"></i></div>
+          <div class="method-title">إدخال يدوي</div>
+          <div class="method-desc">بعد القبول من لوحة التحكم</div>
+        </div>
+        <div class="method-card" id="mc_later" onclick="selectMethod('later')">
+          <div class="method-icon" style="color:var(--text-muted)"><i class="fas fa-clock"></i></div>
+          <div class="method-title">لاحقاً</div>
+          <div class="method-desc">تخطي هذه الخطوة الآن</div>
+        </div>
+      </div>
+
+      <!-- CSV Upload -->
+      <div id="zone_csv" style="display:none;">
+        <div class="upload-zone" id="dropZone">
+          <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" onchange="handleFile(this)"/>
+          <div class="upload-icon"><i class="fas fa-cloud-arrow-up"></i></div>
+          <div class="upload-title">اسحب الملف هنا أو انقر للاختيار</div>
+          <div class="upload-sub">CSV، Excel — الحجم الأقصى 10 ميجا</div>
+        </div>
+        <div class="file-preview" id="filePreview">
+          <i class="fas fa-file-circle-check fa-lg"></i>
+          <div>
+            <div style="font-weight:700;font-size:.85rem;" id="fileName">—</div>
+            <div style="font-size:.75rem;color:var(--text-muted);" id="fileSize">—</div>
+          </div>
+        </div>
+
+        <div class="col-map" id="colMap">
+          <div class="card-title" style="margin-top:16px;margin-bottom:12px;"><i class="fas fa-table-columns"></i> مطابقة الأعمدة</div>
+          <div class="info-block">
+            <i class="fas fa-circle-info fa-sm"></i>
+            <p>طابق أعمدة ملفك مع حقول النظام. الحقول المطلوبة: اسم الطالب، الحلقة.</p>
+          </div>
+          <div id="colMapRows"></div>
+        </div>
+      </div>
+
+      <!-- Google Sheets -->
+      <div id="zone_sheets" style="display:none;">
+        <div class="form-group">
+          <div class="form-label">رابط Google Sheets <span class="req">*</span></div>
+          <input class="form-input" id="f_sheets_url" type="url" placeholder="https://docs.google.com/spreadsheets/d/..." dir="ltr"/>
+          <div style="font-size:.77rem;color:var(--text-muted);margin-top:5px;">
+            <i class="fas fa-lock fa-xs"></i> تأكد أن الشيت مشارك بصلاحية "عرض لأي شخص لديه الرابط"
+          </div>
+        </div>
+        <div class="col-map" id="colMapSheets" style="display:none!important;">
+          <!-- يُملأ بعد جلب الشيت -->
+        </div>
+      </div>
+
+      <!-- Manual notice -->
+      <div id="zone_manual" style="display:none;">
+        <div class="info-block" style="background:var(--gold-lt);border-color:rgba(177,151,56,.3);">
+          <i class="fas fa-circle-check" style="color:var(--gold);"></i>
+          <p style="color:#7c6620;">ممتاز. بعد القبول ستحصل على رابط لوحة التحكم حيث يمكنك إضافة الطلاب يدوياً أو استيرادهم في أي وقت.</p>
+        </div>
+      </div>
+
+      <!-- Later notice -->
+      <div id="zone_later" style="display:none;">
+        <div class="info-block">
+          <i class="fas fa-circle-info fa-sm"></i>
+          <p>حسناً، يمكنك دائماً إضافة الطلاب لاحقاً من لوحة التحكم.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(1)"><i class="fas fa-arrow-right"></i> السابق</button>
+      <button class="btn-primary" onclick="goStep(3)"><span>التالي</span><i class="fas fa-arrow-left"></i></button>
+    </div>
+  </div>
+
+  <!-- ==================== STEP 3 ==================== -->
+  <div class="step-content" id="step3">
+    <div class="card-sard">
+      <div class="card-title"><i class="fas fa-file-contract"></i> شروط الاستخدام</div>
+      <div class="terms-box">
+        <h4>سياسة الاستخدام — منصة السرد</h4>
+        <p>١. تُقدَّم هذه المنصة لخدمة برامج تحفيظ القرآن الكريم حصراً.</p>
+        <p>٢. يتعهد المجمع بصحة البيانات المُدخلة وعدم إدخال بيانات وهمية.</p>
+        <p>٣. تظل بيانات الطلاب ملكاً للمجمع، ولا يحق للمنصة مشاركتها مع أطراف ثالثة.</p>
+        <p>٤. يحق لإدارة المنصة تعليق الحساب في حال مخالفة هذه الشروط.</p>
+        <p>٥. تُحتفظ البيانات لمدة لا تتجاوز ثلاث سنوات من آخر نشاط.</p>
+        <p>٦. في حال وجود أي استفسار يرجى التواصل عبر القنوات الرسمية للمنصة.</p>
+        <p>٧. تخضع هذه الشروط للتعديل في أي وقت مع إخطار المجمعات المسجلة.</p>
+      </div>
+      <div class="terms-check">
+        <input type="checkbox" id="termsCheck" onchange="document.getElementById('btnNextTerms').disabled=!this.checked"/>
+        <label for="termsCheck">أقر بأنني قرأت الشروط وأوافق عليها باسم المجمع الذي أمثله</label>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(2)"><i class="fas fa-arrow-right"></i> السابق</button>
+      <button class="btn-primary" id="btnNextTerms" onclick="goStep(4)" disabled>
+        <span>مراجعة الطلب</span><i class="fas fa-arrow-left"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== STEP 4 ==================== -->
+  <div class="step-content" id="step4">
+    <div class="card-sard">
+      <div class="card-title"><i class="fas fa-clipboard-check"></i> مراجعة الطلب قبل الإرسال</div>
+
+      <div id="summaryRows">
+        <!-- يُملأ بـ JS -->
+      </div>
+    </div>
+
+    <div class="card-sard" style="background:var(--primary-lt);border-color:rgba(1,73,121,.2);">
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <i class="fas fa-hourglass-half fa-lg" style="color:var(--primary);margin-top:2px;"></i>
+        <div>
+          <div style="font-weight:700;color:var(--primary);margin-bottom:4px;">ما الذي يحدث بعد الإرسال؟</div>
+          <div style="font-size:.85rem;color:var(--primary);line-height:1.8;">
+            ١. يصل طلبك لإدارة المنصة فور الإرسال.<br>
+            ٢. تتم المراجعة خلال 24 ساعة.<br>
+            ٣. عند القبول يصلك بريد إلكتروني يحتوي رابط لوحة التحكم الخاصة بمجمعك.<br>
+            ٤. تنشئ رابط المشرفين وتوزعه على المسمعين.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(3)"><i class="fas fa-arrow-right"></i> السابق</button>
+      <button class="btn-primary" id="btnSubmit" onclick="submitRequest()">
+        <i class="fas fa-paper-plane"></i><span>إرسال الطلب</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== SUCCESS ==================== -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon"><i class="fas fa-check"></i></div>
+    <h2>تم إرسال طلبك بنجاح!</h2>
+    <p>ستصلك رسالة على بريدك الإلكتروني عند قبول طلبك. رقم طلبك للمتابعة:</p>
+    <div class="req-id-box">
+      <div class="lbl">رقم الطلب</div>
+      <div class="rid" id="reqId">—</div>
+    </div>
+    <p style="font-size:.82rem;color:var(--text-muted);margin-top:8px;">احتفظ بهذا الرقم للاستفسار</p>
+  </div>
+
+</div><!-- /form-wrap -->
+
+<script>
+/* ============ STATE ============ */
+var currentStep = 1;
+var selectedMethod = '';
+var csvHeaders = [];
+var formData = {};
+
+/* ============ STEPS ============ */
+function goStep(n){
+  if(n > currentStep && !validateStep(currentStep)) return;
+  document.getElementById('step'+currentStep).classList.remove('active');
+  currentStep = n;
+  document.getElementById('step'+currentStep).classList.add('active');
+  updateStepsBar();
+  if(n===4) buildSummary();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function updateStepsBar(){
+  for(var i=1;i<=4;i++){
+    var dot = document.getElementById('dot'+i);
+    var lbl = document.getElementById('lbl'+i);
+    dot.className='step-dot';lbl.className='step-label';
+    if(i < currentStep){ dot.classList.add('done'); lbl.classList.add('done'); dot.innerHTML='<i class="fas fa-check" style="font-size:.75rem;"></i>';}
+    else if(i===currentStep){ dot.classList.add('active'); lbl.classList.add('active'); dot.textContent=['','١','٢','٣','٤'][i];}
+    else{ dot.textContent=['','١','٢','٣','٤'][i]; }
+    if(i<4){ var c=document.getElementById('conn'+i); c.className='step-connector'+(i<currentStep?' done':''); }
+  }
+}
+
+/* ============ VALIDATION ============ */
+function validateStep(n){
+  if(n===1){
+    var ok=true;
+    ['name','city','manager','phone','email','session'].forEach(function(f){
+      var el=document.getElementById('f_'+f);
+      var err=document.getElementById('err_'+f);
+      var v=el.value.trim();
+      var valid=true;
+      if(!v) valid=false;
+      if(f==='email' && v && !/^[^@]+@[^@]+\.[^@]+$/.test(v)) valid=false;
+      if(f==='phone' && v && !/^05\d{8}$/.test(v.replace(/\s/g,''))) valid=false;
+      el.classList.toggle('error',!valid);
+      err.classList.toggle('show',!valid);
+      if(!valid) ok=false;
+    });
+    return ok;
+  }
+  if(n===2){
+    if(selectedMethod==='sheets'){
+      var u=document.getElementById('f_sheets_url').value.trim();
+      if(!u || !u.startsWith('https://docs.google.com/spreadsheets/')){
+        alert('يرجى إدخال رابط Google Sheets صحيح');
+        return false;
+      }
+    }
+    return true;
+  }
+  if(n===3){ return document.getElementById('termsCheck').checked; }
+  return true;
+}
+
+/* ============ METHODS ============ */
+function selectMethod(m){
+  selectedMethod=m;
+  ['csv','sheets','manual','later'].forEach(function(x){
+    document.getElementById('mc_'+x).classList.toggle('selected',x===m);
+    document.getElementById('zone_'+x).style.display=(x===m)?'block':'none';
+  });
+}
+
+/* ============ FILE UPLOAD ============ */
+function handleFile(input){
+  var f=input.files[0];
+  if(!f) return;
+  document.getElementById('fileName').textContent=f.name;
+  document.getElementById('fileSize').textContent=(f.size/1024).toFixed(0)+' KB';
+  document.getElementById('filePreview').classList.add('show');
+
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var text=e.target.result;
+    var lines=text.split('\n').filter(function(l){return l.trim();});
+    if(!lines.length) return;
+    csvHeaders=lines[0].split(',').map(function(h){return h.trim().replace(/"/g,'');});
+    buildColMap();
+  };
+  reader.readAsText(f,'UTF-8');
+}
+
+var sysFields=[
+  {key:'name',label:'اسم الطالب',req:true},
+  {key:'track',label:'المسار',req:false},
+  {key:'halaqa',label:'الحلقة',req:true},
+  {key:'guardian_phone',label:'جوال ولي الأمر',req:false},
+  {key:'student_phone',label:'جوال الطالب',req:false},
+  {key:'parts_count',label:'عدد الأجزاء',req:false}
+];
+
+function buildColMap(){
+  var opts=csvHeaders.map(function(h,i){return '<option value="'+i+'">'+escH(h)+'</option>';}).join('');
+  opts='<option value="">— اختر —</option>'+opts;
+  var html='';
+  sysFields.forEach(function(f){
+    var auto=csvHeaders.findIndex(function(h){return h.includes(f.label)||h.includes(f.key);});
+    html+='<div class="col-map-row">'
+      +'<div class="col-map-label">'+f.label+(f.req?' <span style="color:var(--danger)">*</span>':'')+'</div>'
+      +'<select class="col-select" id="cm_'+f.key+'">'+opts+'</select>'
+      +'</div>';
+  });
+  document.getElementById('colMapRows').innerHTML=html;
+  document.getElementById('colMap').classList.add('show');
+  sysFields.forEach(function(f){
+    var auto=csvHeaders.findIndex(function(h){var hl=h.toLowerCase();return hl.includes(f.key)||hl.includes(f.label);});
+    if(auto>=0) document.getElementById('cm_'+f.key).value=String(auto);
+  });
+}
+
+/* ============ DRAG & DROP ============ */
+var dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('dragging');});
+dz.addEventListener('dragleave',function(){dz.classList.remove('dragging');});
+dz.addEventListener('drop',function(e){
+  e.preventDefault();dz.classList.remove('dragging');
+  var f=e.dataTransfer.files[0];
+  if(f){document.getElementById('csvFile').files=e.dataTransfer.files;handleFile(document.getElementById('csvFile'));}
+});
+
+/* ============ SUMMARY ============ */
+function buildSummary(){
+  var rows=[
+    ['اسم المجمع', document.getElementById('f_name').value],
+    ['المدينة', document.getElementById('f_city').value],
+    ['المسؤول', document.getElementById('f_manager').value],
+    ['الجوال', document.getElementById('f_phone').value],
+    ['البريد الإلكتروني', document.getElementById('f_email').value],
+    ['اسم الدورة', document.getElementById('f_session').value],
+    ['عدد الطلاب', document.getElementById('f_students_count').value||'غير محدد'],
+    ['طريقة إضافة الطلاب', {csv:'ملف CSV',sheets:'Google Sheets',manual:'يدوي لاحقاً',later:'لاحقاً','':'لم يُحدد'}[selectedMethod]||'لم يُحدد']
+  ];
+  var html=rows.map(function(r){
+    return '<div class="summary-row">'
+      +'<span class="summary-label">'+escH(r[0])+'</span>'
+      +'<span class="summary-val">'+escH(r[1])+'</span>'
+      +'</div>';
+  }).join('');
+  document.getElementById('summaryRows').innerHTML=html;
+}
+
+/* ============ SUBMIT ============ */
+function submitRequest(){
+  var btn=document.getElementById('btnSubmit');
+  btn.disabled=true;
+  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i><span>جاري الإرسال...</span>';
+
+  var payload={
+    name:    document.getElementById('f_name').value.trim(),
+    city:    document.getElementById('f_city').value.trim(),
+    manager: document.getElementById('f_manager').value.trim(),
+    phone:   document.getElementById('f_phone').value.trim(),
+    email:   document.getElementById('f_email').value.trim(),
+    session: document.getElementById('f_session').value.trim(),
+    studentsCount: document.getElementById('f_students_count').value,
+    importMethod: selectedMethod,
+    sheetsUrl: selectedMethod==='sheets'?(document.getElementById('f_sheets_url').value.trim()||''):'',
+    status: 'pending',
+    submittedAt: new Date().toISOString()
+  };
+
+  /* ===== SUPABASE INSERT =====
+     استبدل هذا بـ:
+     const { data, error } = await supabase.from('organizations').insert(payload).select().single();
+     ثم حفظ import_jobs إذا كان selectedMethod csv أو sheets
+  ============================= */
+
+  // محاكاة مؤقتة
+  setTimeout(function(){
+    var rid='SRD-'+Math.random().toString(36).slice(2,8).toUpperCase();
+    document.getElementById('step4').classList.remove('active');
+    document.getElementById('successScreen').classList.add('show');
+    document.getElementById('reqId').textContent=rid;
+    // إخفاء شريط الخطوات
+    document.getElementById('stepsBar').style.display='none';
+  }, 1800);
+}
+
+/* ============ HELPERS ============ */
+function escH(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);});}
+</script>
+</body>
+</html>
